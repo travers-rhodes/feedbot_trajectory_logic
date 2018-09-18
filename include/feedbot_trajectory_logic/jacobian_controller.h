@@ -11,8 +11,8 @@
 #include <std_msgs/Float64.h>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
-#include <niryo_one_tutorial/domus_interface.h>
-#include <niryo_one_tutorial/transform_helpers.h>
+#include <feedbot_trajectory_logic/domus_interface.h>
+#include <feedbot_trajectory_logic/transform_helpers.h>
 
 class JacobianController
 {
