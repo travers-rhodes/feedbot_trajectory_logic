@@ -1,0 +1,34 @@
+<launch>
+  <arg name="sim"/>
+  <arg name="simulate_spoon" default="$(arg sim)"/>
+  <arg name="follow_mouth" default="false"/>
+  <arg name="calibrate_only" default="false"/>
+
+  <include file="$(find niryo_one_moveit_config)/launch/planning_context.launch">
+    <arg name="load_robot_description" value="true"/>
+  </include>
+
+  <node name="track_pose_service" pkg="niryo_one_tutorial" type="track_pose_service" respawn="false" output="screen">
+    <!--launch-prefix="/home/travers/run_tmux.sh">-->
+    <rosparam command="load"
+              file="$(find niryo_one_moveit_config)/config/kinematics.yaml"/>
+    <param name="sim" type="bool" value="$(arg sim)"/>
+    <param name="update_rate_hz" type="double" value="30"/>
+    <param name="step_size_meters" type="double" value="0.01"/>
+  </node>
+
+  <node name="spoon_feeder" pkg="niryo_one_tutorial" type="spoon_feeder.py" unless="$(arg calibrate_only)"> 
+    <param name="simulate_spoon" type="bool" value="$(arg simulate_spoon)"/>
+    <param name="z_height" type="double" value="0.05"/>
+    <param name="follow_mouth" type="bool" value="$(arg follow_mouth)"/>
+  </node>
+
+  <node name="play_trajectory_service" pkg="niryo_one_tutorial" type="play_trajectory_server.py"/>
+
+  <!--https://answers.ros.org/question/60975/subscribe-to-new-jointstate-messages/-->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <rosparam param="source_list">["/domus/robot/joint_states"]</rosparam>
+  </node>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find niryo_one_description)/config/default_config.rviz" />
+</launch>
