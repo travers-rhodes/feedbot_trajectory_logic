@@ -6,7 +6,7 @@ import numpy as np
 import play_tapo_trajectory as ptt
 
 from std_msgs.msg import Bool
-from niryo_one_tutorial.srv import PlayTrajectory, PlayTrajectoryResponse 
+from feedbot_trajectory_logic.srv import PlayTrajectory, PlayTrajectoryResponse 
 
 def main():
   # initialize the ros node 

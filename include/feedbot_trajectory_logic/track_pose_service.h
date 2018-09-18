@@ -6,10 +6,10 @@
 // this service also periodically publishes to "/distance_to_target"
 //
 #include <ros/ros.h>
-#include <niryo_one_tutorial/jacobian_controller.h>
-#include "niryo_one_tutorial/TrackPose.h"
-#include "niryo_one_tutorial/domus_interface.h"
-#include "niryo_one_tutorial/mock_domus_interface.h"
+#include <feedbot_trajectory_logic/jacobian_controller.h>
+#include "feedbot_trajectory_logic/TrackPose.h"
+#include "feedbot_trajectory_logic/domus_interface.h"
+#include "feedbot_trajectory_logic/mock_domus_interface.h"
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include "geometry_msgs/Pose.h"
@@ -18,8 +18,8 @@ class TrackPoseService
 {
   public:
     TrackPoseService(double update_rate_hz, double step_size_meters, DomusInterface* domus_interface, ros::NodeHandle*);
-    bool handle_target_update(niryo_one_tutorial::TrackPose::Request &req,
-           niryo_one_tutorial::TrackPose::Response &res);
+    bool handle_target_update(feedbot_trajectory_logic::TrackPose::Request &req,
+           feedbot_trajectory_logic::TrackPose::Response &res);
     void run_tracking();
  
   private:

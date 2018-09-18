@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(niryo_one_tutorial)
+project(feedbot_trajectory_logic)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
@@ -116,7 +116,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES niryo_one_tutorial
+#  LIBRARIES feedbot_trajectory_logic 
 #  CATKIN_DEPENDS moveit_msgs moveit_ros_planning_interface niryo_one_moveit_config roscpp
 #  DEPENDS system_lib
 )
@@ -164,16 +164,16 @@ add_executable(interactive_calibration src/interactive_calibration.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(track_pose_service
-   niryo_one_tutorial
+   feedbot_trajectory_logic
    ${catkin_LIBRARIES}
 )
 
 target_link_libraries(domus_controller
-   niryo_one_tutorial
+   feedbot_trajectory_logic
    ${catkin_LIBRARIES}
 )
 
-target_link_libraries(niryo_one_tutorial
+target_link_libraries(feedbot_trajectory_logic
    ${catkin_LIBRARIES}
 )
 

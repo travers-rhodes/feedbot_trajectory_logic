@@ -2,7 +2,7 @@
 // This class connects to DOMUS via a serial connection 
 // and can be used to send target angles for DOMUS to move to
 //
-#include "niryo_one_tutorial/domus_interface.h"
+#include "feedbot_trajectory_logic/domus_interface.h"
 #include "ros/ros.h"
 
 const uint8_t REQUEST_JOINT_ANGLES = 136;

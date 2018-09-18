@@ -1,4 +1,4 @@
-#include "niryo_one_tutorial/mock_domus_interface.h"
+#include "feedbot_trajectory_logic/mock_domus_interface.h"
 
 // override virtual methods with no-ops
 void

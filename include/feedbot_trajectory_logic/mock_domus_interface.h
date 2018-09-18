@@ -3,7 +3,7 @@
 // so it's helpful to inject it in place of domus_interface 
 // in times when you aren't connected to a physical robot
 //
-#include <niryo_one_tutorial/domus_interface.h>
+#include <feedbot_trajectory_logic/domus_interface.h>
 
 #ifndef MOCK_DOMUS_INTERFACE_H_
 #define MOCK_DOMUS_INTERFACE_H_

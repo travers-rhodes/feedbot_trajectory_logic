@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import rospy
 
-import niryo_one_tutorial.tracker_interface as tracker
+import feedbot_trajectory_logic.tracker_interface as tracker
 import numpy as np
 from feeding_state_transition_logic import transitionLogicDictionary, State
-from niryo_one_tutorial.srv import PlayTrajectory
+from feedbot_trajectory_logic.srv import PlayTrajectory
 from std_msgs.msg import String, Empty
 from geometry_msgs.msg import Quaternion
 

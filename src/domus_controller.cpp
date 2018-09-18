@@ -3,12 +3,12 @@
 //
 
 #include <ros/ros.h>
-#include <niryo_one_tutorial/domus_interface.h>
-#include <niryo_one_tutorial/JointAngles.h>
+#include <feedbot_trajectory_logic/domus_interface.h>
+#include <feedbot_trajectory_logic/JointAngles.h>
 
 DomusInterface domus;
 
-void set_angles_callback(const niryo_one_tutorial::JointAngles::ConstPtr& msg)
+void set_angles_callback(const feedbot_trajectory_logic::JointAngles::ConstPtr& msg)
 {
   ROS_INFO_STREAM("I heard" << msg->joint_angles[0] << msg->joint_angles[1] <<"and more");
   //https://stackoverflow.com/questions/6399090/c-convert-vectorint-to-vectordouble

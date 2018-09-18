@@ -10,7 +10,7 @@ from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion
 
 def load_position_list(filename):
   rospack = rospkg.RosPack()
-  ada_tut_path = rospack.get_path("niryo_one_tutorial")
+  ada_tut_path = rospack.get_path("feedbot_trajectory_logic")
   motion_data = np.loadtxt(ada_tut_path + "/data/" + filename, skiprows=1, delimiter=",")
   sampled_position_motion_data = get_sampled_pos_data(motion_data)
   return(sampled_position_motion_data)

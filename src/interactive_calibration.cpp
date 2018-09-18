@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "simple_marker");
 
-  _config_path = ros::package::getPath("niryo_one_tutorial").append("/config/");
+  _config_path = ros::package::getPath("feedbot_trajectory_logic").append("/config/");
 
   // create an interactive marker server on the topic namespace simple_marker
   interactive_markers::InteractiveMarkerServer server("simple_marker");

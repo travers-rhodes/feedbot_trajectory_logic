@@ -4,7 +4,7 @@
 import rospy
 import numpy as np
 
-from niryo_one_tutorial.srv import TrackPose
+from feedbot_trajectory_logic.srv import TrackPose
 from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, Point, Quaternion 
 from camera_calibration import CameraCalibration

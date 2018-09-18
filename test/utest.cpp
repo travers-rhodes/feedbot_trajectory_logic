@@ -1,6 +1,6 @@
 // see http://wiki.ros.org/gtest
 // Bring in my package's API, which is what I'm testing
-#include "niryo_one_tutorial/transform_helpers.h"
+#include "feedbot_trajectory_logic/transform_helpers.h"
 // Bring in gtest
 #include <gtest/gtest.h>
 

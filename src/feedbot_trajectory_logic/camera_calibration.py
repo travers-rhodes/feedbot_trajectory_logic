@@ -26,7 +26,7 @@ class CameraCalibration:
     - - 0.4549267234161455
     """
     rospack = rospkg.RosPack()
-    self.ada_tut_path = rospack.get_path("niryo_one_tutorial")
+    self.ada_tut_path = rospack.get_path("feedbot_trajectory_logic")
 
     self.world_frame_name = world_frame_name
     self.target_frame_name = target_frame_name

@@ -3,7 +3,7 @@
 // (in cylindrical coordinates) to the target pose (in cartesian coordinates)
 //
 
-#include <niryo_one_tutorial/jacobian_controller.h>
+#include <feedbot_trajectory_logic/jacobian_controller.h>
 
 const double TRANS_EPSILON = 0.01;
 const double QUAT_EPSILON = 0.01;

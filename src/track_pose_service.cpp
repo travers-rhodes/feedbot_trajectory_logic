@@ -1,4 +1,4 @@
-#include <niryo_one_tutorial/track_pose_service.h>
+#include <feedbot_trajectory_logic/track_pose_service.h>
 
 TrackPoseService::TrackPoseService(double update_rate_hz, double step_size_meters, DomusInterface* domus_interface, ros::NodeHandle* n) : controller(step_size_meters, domus_interface, n), _update_rate_hz(update_rate_hz)
 {
@@ -40,8 +40,8 @@ void TrackPoseService::run_tracking()
 }
 
 // this method updates the target for the service to move the robot to
-bool TrackPoseService::handle_target_update(niryo_one_tutorial::TrackPose::Request &req,
-                          niryo_one_tutorial::TrackPose::Response &res)
+bool TrackPoseService::handle_target_update(feedbot_trajectory_logic::TrackPose::Request &req,
+                          feedbot_trajectory_logic::TrackPose::Response &res)
 {
   if(req.stopMotion)
   {
