@@ -7,6 +7,9 @@
 
 #include "niryo_one_msgs/RobotMoveCommand.h"
 #include "niryo_one_msgs/RobotMoveAction.h"
+#include "niryo_one_msgs/RobotMoveGoal.h"
+#include "actionlib_msgs/GoalStatusArray.h"
+#include "std_msgs/String.h"
 #include <actionlib/client/simple_action_client.h>
 #include <ros/ros.h>
 #include <mutex>
@@ -18,6 +21,5 @@ class DomusInterface
     virtual void SendTargetAngles(const std::vector<double> &joint_angles);
   private:
     std::shared_ptr<actionlib::SimpleActionClient<niryo_one_msgs::RobotMoveAction>> ac_;
-    std::mutex mtx_;
 };
 #endif
