@@ -13,7 +13,7 @@ void set_angles_callback(const feedbot_trajectory_logic::JointAngles::ConstPtr& 
   ROS_INFO_STREAM("I heard" << msg->joint_angles[0] << msg->joint_angles[1] <<"and more");
   //https://stackoverflow.com/questions/6399090/c-convert-vectorint-to-vectordouble
   std::vector<double> joint_angle_vector(msg->joint_angles.begin(), msg->joint_angles.end());
-  domus.SendTargetAngles(joint_angle_vector);
+  domus.SendTargetAngles(joint_angle_vector,3);
 }
 
 int main(int argc, char **argv)

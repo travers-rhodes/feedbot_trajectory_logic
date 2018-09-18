@@ -62,9 +62,6 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
   bool is_simulation, is_simulate_spoon;
   double update_rate_hz, step_size_meters;
-  // if we're simulating, don't try to connect to a real robot
-  // but do publish joint states for Rviz
-  ros::param::param<bool>("~sim", is_simulation, false);
   // how frequently do we send a (possibly new) target to the jacobian_controller
   // (which itself has a timer for how frequently to send commands to domus)
   // don't forget to set a default value for these, in case you start from the command line! :)
@@ -72,12 +69,7 @@ int main(int argc, char **argv)
   ros::param::param<double>("~step_size_meters", step_size_meters, 0.01);
 
   DomusInterface* domus_interface;
-  if (is_simulation){
-    ROS_INFO_STREAM("We are simulating the connection to the robot");
-    domus_interface = new MockDomusInterface();
-  } else {
-    domus_interface = new DomusInterface();
-  }
+  domus_interface = new DomusInterface();
   ros::AsyncSpinner spinner(1); // use 1 thread async for callbacks
   spinner.start();
   std::cout << "Waiting for DomusInterface in case it's slow to come up";
