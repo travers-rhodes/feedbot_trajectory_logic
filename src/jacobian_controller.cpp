@@ -18,7 +18,7 @@ JacobianController::JacobianController(double trans_step_size_meters,  DomusInte
 {
   kinematic_model_ = robot_model_loader_.getModel();
   domus_interface_ = domus_interface;
-  domus_interface_->InitializeConnection();
+  domus_interface_->InitializeConnection(*n);
 
   kinematic_state_ = robot_state::RobotStatePtr(new robot_state::RobotState(kinematic_model_));
   kinematic_state_->setToDefaultValues();

@@ -64,11 +64,12 @@ int main(int argc, char **argv)
   double update_rate_hz, step_size_meters;
   // if we're simulating, don't try to connect to a real robot
   // but do publish joint states for Rviz
-  ros::param::get("~sim", is_simulation);
+  ros::param::param<bool>("~sim", is_simulation, false);
   // how frequently do we send a (possibly new) target to the jacobian_controller
   // (which itself has a timer for how frequently to send commands to domus)
-  ros::param::get("~update_rate_hz", update_rate_hz);
-  ros::param::get("~step_size_meters", step_size_meters);
+  // don't forget to set a default value for these, in case you start from the command line! :)
+  ros::param::param<double>("~update_rate_hz", update_rate_hz, 10);
+  ros::param::param<double>("~step_size_meters", step_size_meters, 0.01);
 
   DomusInterface* domus_interface;
   if (is_simulation){
@@ -82,7 +83,7 @@ int main(int argc, char **argv)
   std::cout << "Waiting for DomusInterface in case it's slow to come up";
   ros::Duration(5).sleep();
   TrackPoseService trackPoseService(update_rate_hz, step_size_meters, domus_interface, &n);
-  std::cout << "Waiting for trackPoseService in case it's slow to come up";
+  std::cout << "Waiting for trackPoseService in case it's slow to come up" << std::endl;
   ros::Duration(5).sleep();
   ros::ServiceServer service = n.advertiseService("update_pose_target", &TrackPoseService::handle_target_update, &trackPoseService);
   trackPoseService.run_tracking();

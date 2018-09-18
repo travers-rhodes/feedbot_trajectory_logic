@@ -4,6 +4,8 @@
 //
 #include "feedbot_trajectory_logic/domus_interface.h"
 #include "ros/ros.h"
+#include "actionlib_msgs/GoalStatusArray.h"
+#include "std_msgs/String.h"
 
 const uint8_t REQUEST_JOINT_ANGLES = 136;
 
@@ -16,22 +18,10 @@ DomusInterface::DomusInterface()
 }
 
 void
-DomusInterface::InitializeConnection()
+DomusInterface::InitializeConnection(ros::NodeHandle nh)
 {
-  // https://github.com/ros-drivers/um6/blob/indigo-devel/src/main.cpp
-  ser.setPort("/dev/ttyACM0");
-  ser.setBaudrate(115200);
-  serial::Timeout to = serial::Timeout(50, 50, 0, 50, 0);
-  ser.setTimeout(to);
-
-  try
-  {
-    ser.open();
-  }
-  catch(const serial::IOException& e)
-  {
-    ROS_ERROR("Unable to connect to port.");
-  }
+  ac_ = std::make_shared<actionlib::SimpleActionClient<niryo_one_msgs::RobotMoveAction>>("/niryo_one/commander/robot_action", true);
+  ac_->waitForServer();
 }
 
 void
@@ -44,40 +34,16 @@ DomusInterface::SendTargetAngles(const std::vector<double> &joint_angles)
       return;
     }
   }
-  ros::Rate r(100);
-  // OpCode + 6 angles * 2 bytes
-  uint8_t command[13];
-  //ROS_INFO_STREAM("I was asked to go to "<<joint_angles[0]
-  // <<","<<joint_angles[1]
-  // <<","<<joint_angles[2]
-  // <<","<<joint_angles[3]
-  // <<","<<joint_angles[4]
-  // <<","<<joint_angles[5]
-  // <<std::endl);
-  
-  command[0] = REQUEST_JOINT_ANGLES;
-  uint16_t joint_temp;
-  for (size_t joint_index = 0; joint_index < 6; joint_index++)
-  {
-    //ROS_INFO("adding to my command");
-    // let's say joint_angles ranges from -2pi to 2pi just to be extra safe
-    // so, we'll map that via [-2pi, 2pi] -> [0, 65535]
-    // giving us
-    joint_temp = (joint_angles[joint_index] + 2.0 * M_PI)/(4.0 * M_PI) * 65535;
-    //ROS_INFO("getting there");
-    // big byte
-    command[joint_index * 2 + 1] = joint_temp >> 8;
-    //ROS_INFO("almost there");
-    // small byte
-    command[joint_index * 2 + 2] = joint_temp & 0xff;
-  }
-  //ROS_INFO_STREAM("got my command ready"<<unsigned(command[0])
-  // <<","<<unsigned(command[11])
-  // <<","<<unsigned(command[12])
-  // <<std::endl);
 
-  // OpCode + 6 angles * 2 bytes
-  ser.write(command, 13);
-  ser.flush();
-  //ROS_INFO_STREAM("command sent");
+  // use a mutex (apparently i should use a unique_lock, but i have no idea why...) to ensure only
+  // one command sent at a time 
+  if (mtx_.try_lock()) {  
+    niryo_one_msgs::RobotMoveGoal goal;
+    niryo_one_msgs::RobotMoveCommand cmd;
+    cmd.cmd_type = 1;
+    cmd.joints = joint_angles; 
+    goal.cmd = cmd;
+    ac_->sendGoalAndWait(goal);
+    mtx_.unlock();
+  }
 }

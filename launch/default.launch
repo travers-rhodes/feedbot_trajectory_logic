@@ -24,11 +24,4 @@
   </node>
 
   <node name="play_trajectory_service" pkg="feedbot_trajectory_logic" type="play_trajectory_server.py"/>
-
-  <!--https://answers.ros.org/question/60975/subscribe-to-new-jointstate-messages/-->
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
-    <rosparam param="source_list">["/domus/robot/joint_states"]</rosparam>
-  </node>
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find niryo_one_description)/config/default_config.rviz" />
 </launch>
