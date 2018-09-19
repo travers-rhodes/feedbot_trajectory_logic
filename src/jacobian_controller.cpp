@@ -10,7 +10,9 @@ const double QUAT_EPSILON = 0.01;
 const double ANGLE_STEP_SIZE = 0.1;
 //const double TRANS_STEP_SIZE = 0.01; replaced by step_size_meters
 const double MAX_JOINT_STEP = 0.1;
-
+const double MIN_TIME_TO_REACH_NEW = 0.2;
+const double TRANS_SPEED = 0.5;
+ 
 //constructor
 JacobianController::JacobianController(double trans_step_size_meters,  DomusInterface* domus_interface, ros::NodeHandle* n)
   : robot_model_loader_("robot_description"),
@@ -29,7 +31,7 @@ JacobianController::JacobianController(double trans_step_size_meters,  DomusInte
   std::cout << "Waiting to give time for connection to Arduino to be established" << std::endl;
   ros::Duration(2).sleep();
   std::cout << "Moving to default position" << std::endl;
-  domus_interface->SendTargetAngles(initial_joint_values);
+  domus_interface->SendTargetAngles(initial_joint_values, 3);
   kinematic_state_->setJointGroupPositions(joint_model_group_, initial_joint_values);  
   current_pose_ = kinematic_state_->getGlobalLinkTransform("spoon_link");
   
@@ -87,6 +89,7 @@ JacobianController::make_step_to_target_pose(const geometry_msgs::Pose &target_p
   {
     double step_scale = _trans_step_size_meters / trans_dist;
     scale_down_step(step_scale, trans_diff, rot_angle, cylindrical_diff);
+    trans_dist = _trans_step_size_meters;
   }
  
   // scale down the move if the rotation is too big 
@@ -94,6 +97,7 @@ JacobianController::make_step_to_target_pose(const geometry_msgs::Pose &target_p
   {
     double angle_step_scale = ANGLE_STEP_SIZE / rot_angle;
     scale_down_step(angle_step_scale, trans_diff, rot_angle, cylindrical_diff);
+    trans_dist = trans_dist * angle_step_scale;
   }
 
   Eigen::VectorXd joint_delta = get_joint_delta(cylindrical_diff, rot_angle, rot_axis);
@@ -120,7 +124,7 @@ JacobianController::make_step_to_target_pose(const geometry_msgs::Pose &target_p
   {
     new_joint_values[i] = joint_delta(i) + current_joint_values[i];
   }
-  domus_interface_->SendTargetAngles(new_joint_values);
+  domus_interface_->SendTargetAngles(new_joint_values, std::max(MIN_TIME_TO_REACH_NEW, trans_dist / TRANS_SPEED));
 
   // update the state of this class to reflect the new robot position, and publish the new robot position.
   kinematic_state_->setJointGroupPositions(joint_model_group_, new_joint_values);  
@@ -201,5 +205,3 @@ JacobianController::publish_robot_state()
   joint_pub_.publish(joint_state_);
   return;
 }
-
-

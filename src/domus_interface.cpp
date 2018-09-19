@@ -25,7 +25,7 @@ DomusInterface::InitializeConnection(ros::NodeHandle nh)
 }
 
 void
-DomusInterface::SendTargetAngles(const std::vector<double> &joint_angles)
+DomusInterface::SendTargetAngles(const std::vector<double> &joint_angles, float trajectory_duration)
 {
   for (int i = 0; i < joint_angles.size(); i++) {
     if (joint_angles[i] > max_joint_angles[i] || joint_angles[i] < min_joint_angles[i]) 
@@ -41,7 +41,7 @@ DomusInterface::SendTargetAngles(const std::vector<double> &joint_angles)
 
   trajectory_msgs::JointTrajectoryPoint point;
   point.positions = joint_angles;
-  point.time_from_start = ros::Duration(3);
+  point.time_from_start = ros::Duration(trajectory_duration);
   points.push_back(point);
 
   // now, finally, fill out the structure

@@ -15,7 +15,7 @@ class DomusInterface
   public:
     DomusInterface();
     virtual void InitializeConnection(ros::NodeHandle nh);
-    virtual void SendTargetAngles(const std::vector<double> &joint_angles);
+    virtual void SendTargetAngles(const std::vector<double> &joint_angles, float trajectory_duration);
   private:
     std::shared_ptr<actionlib::SimpleActionClient<niryo_one_msgs::RobotMoveAction>> ac_;
     std::mutex mtx_;
