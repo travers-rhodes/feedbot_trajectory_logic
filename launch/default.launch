@@ -1,6 +1,5 @@
 <launch>
-  <arg name="sim"/>
-  <arg name="simulate_spoon" default="$(arg sim)"/>
+  <arg name="simulate_spoon" default="false"/>
   <arg name="follow_mouth" default="false"/>
   <arg name="calibrate_only" default="false"/>
 
@@ -12,7 +11,6 @@
     <!--launch-prefix="/home/travers/run_tmux.sh">-->
     <rosparam command="load"
               file="$(find niryo_one_moveit_config)/config/kinematics.yaml"/>
-    <param name="sim" type="bool" value="$(arg sim)"/>
     <param name="update_rate_hz" type="double" value="30"/>
     <param name="step_size_meters" type="double" value="0.01"/>
   </node>

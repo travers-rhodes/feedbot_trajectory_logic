@@ -35,13 +35,32 @@ DomusInterface::SendTargetAngles(const std::vector<double> &joint_angles)
     }
   }
 
+  trajectory_msgs::JointTrajectory joint_trajectory;
+  std::vector<std::string> joint_names = {"joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6"};
+  std::vector<trajectory_msgs::JointTrajectoryPoint> points;
+
+  trajectory_msgs::JointTrajectoryPoint point;
+  point.positions = joint_angles;
+  point.time_from_start = ros::Duration(3);
+  points.push_back(point);
+
+  // now, finally, fill out the structure
+  joint_trajectory.joint_names = joint_names;
+  joint_trajectory.points = points;
+  moveit_msgs::RobotTrajectory trajectory;
+  trajectory.joint_trajectory = joint_trajectory;
+
+  niryo_one_msgs::TrajectoryPlan trajectory_plan;
+  trajectory_plan.trajectory = trajectory;
+
   // use a mutex (apparently i should use a unique_lock, but i have no idea why...) to ensure only
   // one command sent at a time 
   if (mtx_.try_lock()) {  
     niryo_one_msgs::RobotMoveGoal goal;
     niryo_one_msgs::RobotMoveCommand cmd;
-    cmd.cmd_type = 1;
-    cmd.joints = joint_angles; 
+    cmd.cmd_type = 7;
+    //cmd.joints = joint_angles;
+    cmd.Trajectory = trajectory_plan;
     goal.cmd = cmd;
     ac_->sendGoalAndWait(goal);
     mtx_.unlock();
