@@ -10,7 +10,7 @@ const double QUAT_EPSILON = 0.01;
 const double ANGLE_STEP_SIZE = 0.1;
 //const double TRANS_STEP_SIZE = 0.01; replaced by step_size_meters
 const double MAX_JOINT_STEP = 0.1;
-const double MIN_TIME_TO_REACH_NEW = 0.08;
+const double MIN_TIME_TO_REACH_NEW = 0.2;
 const double TRANS_SPEED = 0.5;
  
 //constructor

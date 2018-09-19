@@ -19,6 +19,7 @@ DomusInterface::InitializeConnection(ros::NodeHandle nh)
 {
   ac_ = std::make_shared<actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>>("/niryo_one_follow_joint_trajectory_controller/follow_joint_trajectory", true);
   ac_->waitForServer();
+  reset_pub_ = nh.advertise<std_msgs::Empty>("/niryo_one/steppers_reset_controller", 1);
 }
 
 // move to the target joint_angles and the motion should take you secs seconds.
@@ -41,6 +42,16 @@ DomusInterface::SendTargetAngles(const std::vector<double> &joint_angles, float 
   trajectory_msgs::JointTrajectory joint_trajectory;
   std::vector<std::string> joint_names = {"joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6"};
   std::vector<trajectory_msgs::JointTrajectoryPoint> points;
+
+  std::vector<control_msgs::JointTolerance> tols;
+  for (int i = 0; i < joint_angles.size(); i++) {
+    control_msgs::JointTolerance tol;
+    tol.name = joint_names[i];
+    tol.position = 5;
+    tol.velocity = 5;
+    tol.acceleration = 5;
+    tols.push_back(tol);
+  }
   
   trajectory_msgs::JointTrajectoryPoint point;
   point.positions = joint_angles;
@@ -51,6 +62,9 @@ DomusInterface::SendTargetAngles(const std::vector<double> &joint_angles, float 
   joint_trajectory.joint_names = joint_names;
   joint_trajectory.points = points;
   goal.trajectory = joint_trajectory;
-
+  goal.path_tolerance = tols;
+  
+  std_msgs::Empty empt;
+  reset_pub_.publish(empt);
   ac_->sendGoalAndWait(goal);
 }

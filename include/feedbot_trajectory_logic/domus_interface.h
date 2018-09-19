@@ -7,6 +7,7 @@
 
 #include "control_msgs/FollowJointTrajectoryAction.h"
 #include "std_msgs/String.h"
+#include "std_msgs/Empty.h"
 #include <actionlib/client/simple_action_client.h>
 #include <ros/ros.h>
 #include <mutex>
@@ -18,5 +19,6 @@ class DomusInterface
     virtual void SendTargetAngles(const std::vector<double> &joint_angles, float secs);
   private:
     std::shared_ptr<actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>> ac_;
+    ros::Publisher reset_pub_;
 };
 #endif
