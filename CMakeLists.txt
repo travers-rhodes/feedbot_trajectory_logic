@@ -26,6 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## https://github.com/wsnewman/learning_ros/blob/master/Part_2/example_eigen/CMakeLists.txt
 find_package(Eigen3 REQUIRED)
 find_package(rostest REQUIRED)
+find_package(yaml-cpp REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 add_definitions(${EIGEN_DEFINITIONS})
 
@@ -177,6 +178,7 @@ target_link_libraries(feedbot_trajectory_logic
 )
 
 target_link_libraries(interactive_calibration
+   yaml-cpp
    ${catkin_LIBRARIES}
 )
 

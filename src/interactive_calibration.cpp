@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <fstream>
+#include "yaml-cpp/yaml.h"
 
 #include <interactive_markers/interactive_marker_server.h>
 #include <tf/transform_datatypes.h>
@@ -39,6 +40,12 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "simple_marker");
 
   _config_path = ros::package::getPath("feedbot_trajectory_logic").append("/config/");
+  
+  YAML::Node calibParams = YAML::LoadFile(_config_path + "calibrationParameters.yml");
+  std::vector<double> init_quat = calibParams["QuaternionXYZW"].as<std::vector<double>>();
+  std::vector<double> init_trans = calibParams["TranslationXYZ"].as<std::vector<double>>();
+  ros::param::set("camera_calib_params/QuaternionXYZW", init_quat); 
+  ros::param::set("camera_calib_params/TranslationXYZ", init_trans);
 
   // create an interactive marker server on the topic namespace simple_marker
   interactive_markers::InteractiveMarkerServer server("simple_marker");
@@ -55,6 +62,13 @@ int main(int argc, char** argv)
   // create a grey box marker
   visualization_msgs::Marker box_marker;
   box_marker.type = visualization_msgs::Marker::CUBE;
+  box_marker.pose.orientation.x = init_quat[0];
+  box_marker.pose.orientation.y = init_quat[1];
+  box_marker.pose.orientation.z = init_quat[2];
+  box_marker.pose.orientation.w = init_quat[3];
+  box_marker.pose.position.x = init_trans[0];
+  box_marker.pose.position.y = init_trans[1];
+  box_marker.pose.position.z = init_trans[2];
   box_marker.scale.x = 0.25;
   box_marker.scale.y = 0.25;
   box_marker.scale.z = 0.25;

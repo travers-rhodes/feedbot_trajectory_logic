@@ -19,6 +19,7 @@
     <param name="simulate_spoon" type="bool" value="$(arg simulate_spoon)"/>
     <param name="z_height" type="double" value="0.05"/>
     <param name="follow_mouth" type="bool" value="$(arg follow_mouth)"/>
+    <param name="mouth_point_topic" type="string" value="/tracking_face_mouth_point"/>
   </node>
 
   <node name="play_trajectory_service" pkg="feedbot_trajectory_logic" type="play_trajectory_server.py"/>
