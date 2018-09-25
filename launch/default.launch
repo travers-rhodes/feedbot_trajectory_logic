@@ -11,8 +11,8 @@
     <!--launch-prefix="/home/travers/run_tmux.sh">-->
     <rosparam command="load"
               file="$(find niryo_one_moveit_config)/config/kinematics.yaml"/>
-    <param name="update_rate_hz" type="double" value="30"/>
-    <param name="step_size_meters" type="double" value="0.05"/>
+    <param name="update_rate_hz" type="double" value="10"/>
+    <param name="step_size_meters" type="double" value="0.03"/>
   </node>
 
   <node name="spoon_feeder" pkg="feedbot_trajectory_logic" type="spoon_feeder.py" unless="$(arg calibrate_only)"> 

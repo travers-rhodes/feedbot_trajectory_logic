@@ -9,8 +9,8 @@ const double TRANS_EPSILON = 0.01;
 const double QUAT_EPSILON = 0.01;
 const double ANGLE_STEP_SIZE = 0.1;
 //const double TRANS_STEP_SIZE = 0.01; replaced by step_size_meters
-const double MAX_JOINT_STEP = 0.1;
-const double MIN_TIME_TO_REACH_NEW = 0.2;
+const double MAX_JOINT_STEP = 0.05;
+const double MIN_TIME_TO_REACH_NEW = 0.5;
 const double TRANS_SPEED = 0.5;
  
 //constructor
@@ -28,8 +28,8 @@ JacobianController::JacobianController(double trans_step_size_meters,  DomusInte
   joint_model_group_ = kinematic_model_->getJointModelGroup("arm");
 
   std::vector<double> initial_joint_values { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-  std::cout << "Waiting to give time for connection to Arduino to be established" << std::endl;
-  ros::Duration(2).sleep();
+  //std::cout << "Waiting to give time for connection to Arduino to be established" << std::endl;
+  //ros::Duration(2).sleep();
   std::cout << "Moving to default position" << std::endl;
   domus_interface->SendTargetAngles(initial_joint_values, 3);
   kinematic_state_->setJointGroupPositions(joint_model_group_, initial_joint_values);  
@@ -37,8 +37,8 @@ JacobianController::JacobianController(double trans_step_size_meters,  DomusInte
   
   // set up joint publishing
   joint_pub_ = n->advertise<sensor_msgs::JointState>("/domus/robot/joint_states", 1);
-  std::cout << "Sleeping for 5 seconds to get to initial position";
-  ros::Duration(5).sleep();
+  std::cout << "Sleeping for 2 seconds to get to initial position";
+  ros::Duration(2).sleep();
 }
 
 // returns the distance to the target
