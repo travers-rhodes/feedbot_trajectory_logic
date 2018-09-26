@@ -6,7 +6,7 @@ import numpy as np
 
 from feedbot_trajectory_logic.srv import TrackPose
 from std_msgs.msg import Header
-from geometry_msgs.msg import Pose, Point, Quaternion 
+from geometry_msgs.msg import Pose, Point, PointStamped, Quaternion 
 from camera_calibration import CameraCalibration
 
 class TrackerInterface:
@@ -27,7 +27,7 @@ class TrackerInterface:
 
   def start_updating_target_to_point(self, mouth_point_topic, robot_coord_offset=[0,0,0]):
     self.stop_moving() 
-    self.mouth_target_listener = rospy.Subscriber(mouth_point_topic, Point, self._update_target_camera_frame, (robot_coord_offset))
+    self.mouth_target_listener = rospy.Subscriber(mouth_point_topic, PointStamped, self._update_target_camera_frame, (robot_coord_offset))
   
   def start_tracking_fixed_target(self, robot_coord_point):
     self.stop_moving() 
@@ -49,7 +49,7 @@ class TrackerInterface:
   # return an np.array of the [x,y,z] target mouth location
   # in the coordinate frame of the robot base
   def _convert_camera_to_robot_frame(self, mouth_pos):
-    t = mouth_pos
+    t = mouth_pos.point
     point_in_camera_frame = np.array([t.x, t.y, t.z, 1])
     point_in_robot_frame = self.cameraCalib.convert_to_robot_frame(point_in_camera_frame)
     return point_in_robot_frame[0:3]
