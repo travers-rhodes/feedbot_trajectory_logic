@@ -16,7 +16,7 @@ class DomusInterface
   public:
     DomusInterface();
     virtual void InitializeConnection(ros::NodeHandle nh);
-    virtual void SendTargetAngles(const std::vector<double> &joint_angles, float secs);
+    virtual bool SendTargetAngles(const std::vector<double> &joint_angles, float secs);
   private:
     std::shared_ptr<actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>> ac_;
     ros::Publisher reset_pub_;

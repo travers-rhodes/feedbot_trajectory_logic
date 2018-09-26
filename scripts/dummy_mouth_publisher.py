@@ -4,11 +4,11 @@ import numpy as np
 from std_msgs.msg import Header
 from geometry_msgs.msg import Point, PointStamped
 
-point_topic = "/DO/inferenceOut/Point"
-point_stamped_topic = point_topic + "Stamped"
 
 rospy.init_node("dummy_publisher")
-pub = rospy.Publisher(point_topic, Point, queue_size=10)
+
+point_stamped_topic = rospy.get_param('~mouth_point_topic')#point_topic + "Stamped"
+#pub = rospy.Publisher(point_topic, Point, queue_size=10)
 pubStamped = rospy.Publisher(point_stamped_topic, PointStamped, queue_size=10)
 h = Header()
 h.stamp = rospy.Time.now()
@@ -26,6 +26,6 @@ while True:
     h.stamp = rospy.Time.now()
     h.frame_id = "camera_rgb_optical_frame"
     mesgStamped = PointStamped(h,mesg)
-    pub.publish(mesg)
+#    pub.publish(mesg)
     pubStamped.publish(mesgStamped)
     rospy.sleep(4)

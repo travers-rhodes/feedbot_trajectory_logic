@@ -124,14 +124,18 @@ JacobianController::make_step_to_target_pose(const geometry_msgs::Pose &target_p
   {
     new_joint_values[i] = joint_delta(i) + current_joint_values[i];
   }
-  domus_interface_->SendTargetAngles(new_joint_values, std::max(MIN_TIME_TO_REACH_NEW, trans_dist / TRANS_SPEED));
 
-  // update the state of this class to reflect the new robot position, and publish the new robot position.
-  kinematic_state_->setJointGroupPositions(joint_model_group_, new_joint_values);  
-  current_pose_ = kinematic_state_->getGlobalLinkTransform("spoon_link");
+  bool successful_move = domus_interface_->SendTargetAngles(new_joint_values, std::max(MIN_TIME_TO_REACH_NEW, trans_dist / TRANS_SPEED));
+
+  if (successful_move) {
+    // update the state of this class to reflect the new robot position, and publish the new robot position.
+    kinematic_state_->setJointGroupPositions(joint_model_group_, new_joint_values);  
+    current_pose_ = kinematic_state_->getGlobalLinkTransform("spoon_link");
+  }
+
   publish_robot_state();
 
-  // return 1 to say we are moving to the target
+  // return 1 to say we have not yet arrived at the target 
   return 1.0;
 }
 

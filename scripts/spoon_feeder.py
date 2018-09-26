@@ -20,7 +20,7 @@ class SpoonFeeder:
     self._play_trajectory = rospy.ServiceProxy("play_trajectory", PlayTrajectory)
     rospy.logwarn("TrackerInterface successfully initialized")
     self._set_state(State.WAIT_FOR_SPOON_CALIBRATION)
-    self.restart_do_pub = rospy.Publisher('/DO/restart', Empty, queue_size = 1)
+    self.restart_do_pub = rospy.Publisher('/tracking_face_transform/reinitialization', Empty, queue_size = 1)
 
     while not rospy.is_shutdown():
       with transitionLogicDictionary[self.state]() as transitionLogic:

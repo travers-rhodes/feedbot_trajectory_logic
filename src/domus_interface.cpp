@@ -22,18 +22,17 @@ DomusInterface::InitializeConnection(ros::NodeHandle nh)
 }
 
 // move to the target joint_angles and the motion should take you secs seconds.
-void
+// return false if we know the robot motion failed
+bool
 DomusInterface::SendTargetAngles(const std::vector<double> &joint_angles, float secs)
 {
   for (int i = 0; i < joint_angles.size(); i++) {
     if (joint_angles[i] > max_joint_angles[i] || joint_angles[i] < min_joint_angles[i]) 
     {
       ROS_ERROR_STREAM("The requested joint " << i << " was " << joint_angles[i] << " which is past the joint limits.");
-      return;
+      return false;
     }
   }
-
-  
 
   // use a mutex (apparently i should use a unique_lock, but i have no idea why...) to ensure only
   // one command sent at a time 
@@ -65,4 +64,5 @@ DomusInterface::SendTargetAngles(const std::vector<double> &joint_angles, float 
   
   std_msgs::Empty empt;
   ac_->sendGoal(goal);
+  return true;
 }
