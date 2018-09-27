@@ -3,6 +3,7 @@ from enum import Enum
 
 from std_msgs.msg import Bool, Float64
 from spoon_perception.srv import ObjectSpoon, ObjectSpoonResponse
+from geometry_msgs.msg import PointStamped
 
 class State(Enum):
   MOVE_TO_PLATE = 1
@@ -85,6 +86,8 @@ class PickUpStateTransitionLogic(TopicBasedTransitionLogic):
       r.sleep()
     check_spoon_response = self._check_spoon()
     if check_spoon_response.histCorr < hist_corr_threshold:
+      if not rospy.get_param('~simulate_mouth'):
+        rospy.wait_for_messge(rospy.get_param("~mouth_point_topic"), PointStamped)
       return State.PREPARE_FOR_MOUTH
     return State.PICK_UP_FOOD
 
