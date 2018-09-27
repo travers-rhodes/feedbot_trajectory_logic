@@ -17,7 +17,8 @@ distance_to_goal_topic = "/distance_to_target" # std_msgs/Float64
 food_acquired_topic = "/food_acquired" # std_msgs/Bool from PlayTapoTrajectory
 object_in_spoon_service_name = "/detect_object_spoon" # service to detect whether there is an object in spoon
 
-hist_corr_threshold = 0.5
+hist_corr_threshold = 0.7
+food_eaten_corr_threshold = 0.8
 
 class TransitionLogic(object):
   def __enter__(self):
@@ -89,8 +90,20 @@ class PickUpStateTransitionLogic(TopicBasedTransitionLogic):
     return State.PICK_UP_FOOD
 
 class WaitInMouthStateTransitionLogic(TransitionLogic):
+  def __init__(self):
+    # what we go to next depends on whether there is food in the spoon
+    # however, if we're simulating the spoon we make a dummy call to service
+    if rospy.get_param('~simulate_spoon'):
+      self._check_spoon = lambda:ObjectSpoonResponse(0,"dummy")
+    else:
+      self._check_spoon = rospy.ServiceProxy(object_in_spoon_service_name, ObjectSpoon)
+
   def wait_and_return_next_state(self):
-    rospy.sleep(4)
+    rospy.sleep(1)
+    check_spoon_response = self._check_spoon()
+    while check_spoon_response.histCorr < hist_corr_threshold:
+      rospy.sleep(1)
+      check_spoon_response = self._check_spoon()
     return State.PREPARE_FOR_PLATE
 
 class SpoonCalibrationStateTransitionLogic(TransitionLogic):

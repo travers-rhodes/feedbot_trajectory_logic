@@ -51,7 +51,7 @@ class SpoonFeeder:
     elif self.state == State.MOVE_TO_MOUTH:
       follow_mouth = rospy.get_param('~follow_mouth')
       if follow_mouth:
-        self.tracker.start_updating_target_to_point(rospy.get_param('~mouth_point_topic'))
+        self.tracker.start_updating_target_to_point(rospy.get_param('~mouth_point_topic'), [0,-0.03,0])
       else:  
         self.tracker.start_tracking_fixed_target([0.27,0.25,0.27])
     elif self.state == State.WAIT_IN_MOUTH:
