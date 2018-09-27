@@ -116,7 +116,7 @@ class MoveToMouthStateTransitionLogic(DistanceBasedTransitionLogic):
     super(MoveToMouthStateTransitionLogic, self).__init__(0.02, State.WAIT_IN_MOUTH)
 
   def wait_and_return_next_state(self):
-    if rospy.get_param('~just_follow_mouth', false):
+    if rospy.get_param('~just_follow_mouth', False):
       while(not rospy.is_shutdown()):
         rospy.sleep(10)
     return super(MoveToMouthStateTransitionLogic, self).wait_and_return_next_state(distance_to_goal_topic, Float64)
