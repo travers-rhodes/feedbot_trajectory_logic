@@ -115,6 +115,12 @@ class MoveToMouthStateTransitionLogic(DistanceBasedTransitionLogic):
     # super nicely generates a self.topic_true attribute for us.
     super(MoveToMouthStateTransitionLogic, self).__init__(0.02, State.WAIT_IN_MOUTH)
 
+  def wait_and_return_next_state(self):
+    if rospy.get_param('~just_follow_mouth', false):
+      while(not rospy.is_shutdown()):
+        rospy.sleep(10)
+    return super(MoveToMouthStateTransitionLogic, self).wait_and_return_next_state(distance_to_goal_topic, Float64)
+
 class PrepareForPlateStateTransitionLogic(DistanceBasedTransitionLogic):
   def __init__(self):
     # super nicely generates a self.topic_true attribute for us.

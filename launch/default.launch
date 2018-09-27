@@ -2,6 +2,7 @@
   <arg name="simulate_spoon" default="true"/>
   <arg name="follow_mouth" default="false"/>
   <arg name="calibrate_only" default="false"/>
+  <arg name="just_follow_mouth" default="false"/>
 
   <include file="$(find niryo_one_moveit_config)/launch/planning_context.launch">
     <arg name="load_robot_description" value="true"/>
@@ -20,6 +21,7 @@
     <param name="z_height" type="double" value="0.05"/>
     <param name="follow_mouth" type="bool" value="$(arg follow_mouth)"/>
     <param name="mouth_point_topic" type="string" value="/tracking_face_mouth_point"/>
+    <param name="just_follow_mouth" type="string" value="$(arg just_follow_mouth)"/>
   </node>
 
   <node name="play_trajectory_service" pkg="feedbot_trajectory_logic" type="play_trajectory_server.py"/>
