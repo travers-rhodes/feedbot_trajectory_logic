@@ -86,7 +86,7 @@ class PickUpStateTransitionLogic(TopicBasedTransitionLogic):
       r.sleep()
     check_spoon_response = self._check_spoon()
     if check_spoon_response.histCorr < hist_corr_threshold:
-      if not rospy.get_param('~simulate_mouth'):
+      if rospy.get_param('~follow_mouth'):
         rospy.wait_for_messge(rospy.get_param("~mouth_point_topic"), PointStamped)
       return State.PREPARE_FOR_MOUTH
     return State.PICK_UP_FOOD
