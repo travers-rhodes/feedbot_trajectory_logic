@@ -69,7 +69,7 @@ int main(int argc, char **argv)
   ros::param::param<double>("~step_size_meters", step_size_meters, 0.01);
 
   DomusInterface* domus_interface;
-  domus_interface = new DomusInterface();
+  domus_interface = new NiryoInterface();
   ros::AsyncSpinner spinner(1); // use 1 thread async for callbacks
   spinner.start();
   std::cout << "Waiting for DomusInterface in case it's slow to come up";

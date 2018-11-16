@@ -137,6 +137,8 @@ include_directories(
 add_library(${PROJECT_NAME}
    src/jacobian_controller.cpp
    src/domus_interface.cpp
+   src/custom_domus_interface.cpp
+   src/niryo_interface.cpp
    src/transform_helpers.cpp
 )
 

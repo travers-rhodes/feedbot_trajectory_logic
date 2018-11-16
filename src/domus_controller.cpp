@@ -3,10 +3,10 @@
 //
 
 #include <ros/ros.h>
-#include <feedbot_trajectory_logic/domus_interface.h>
+#include <feedbot_trajectory_logic/niryo_interface.h>
 #include <feedbot_trajectory_logic/JointAngles.h>
 
-DomusInterface domus;
+NiryoInterface domus;
 
 void set_angles_callback(const feedbot_trajectory_logic::JointAngles::ConstPtr& msg)
 {
@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "domus_controller");
   ros::NodeHandle n;
-  domus.InitializeConnection(n);
+  domus.InitializeConnection();
   ros::Subscriber sub = n.subscribe("set_joint_angles", 10, set_angles_callback);
   ros::spin();
   return 0; 
