@@ -26,6 +26,7 @@ CustomDomusInterface::InitializeConnection()
   }
   catch(const serial::IOException& e)
   {
+    std::cerr << e.what() << std::endl;
     ROS_ERROR("Unable to connect to port.");
   }
 }
