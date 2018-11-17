@@ -17,7 +17,7 @@
 class TrackPoseService
 {
   public:
-    TrackPoseService(double update_rate_hz, double step_size_meters, DomusInterface* domus_interface, ros::NodeHandle*);
+    TrackPoseService(double update_rate_hz, double step_size_meters, DomusInterface* domus_interface, ros::NodeHandle*, std::string robot_description_param_name);
     bool handle_target_update(feedbot_trajectory_logic::TrackPose::Request &req,
            feedbot_trajectory_logic::TrackPose::Response &res);
     void run_tracking();

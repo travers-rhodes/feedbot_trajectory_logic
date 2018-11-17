@@ -1,6 +1,6 @@
 #include <feedbot_trajectory_logic/track_pose_service.h>
 
-TrackPoseService::TrackPoseService(double update_rate_hz, double step_size_meters, DomusInterface* domus_interface, ros::NodeHandle* n) : controller(step_size_meters, domus_interface, n), _update_rate_hz(update_rate_hz)
+TrackPoseService::TrackPoseService(double update_rate_hz, double step_size_meters, DomusInterface* domus_interface, ros::NodeHandle* n, std::string robot_description_param_name) : controller(step_size_meters, domus_interface, n, robot_description_param_name), _update_rate_hz(update_rate_hz)
 {
   dist_pub_ = n->advertise<std_msgs::Float64>("distance_to_target", 1);
 
@@ -62,13 +62,15 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
   bool is_simulation, is_simulate_spoon;
   double update_rate_hz, step_size_meters;
-  std::string robot_type;
+  std::string robot_type, link_prefix;
   // how frequently do we send a (possibly new) target to the jacobian_controller
   // (which itself has a timer for how frequently to send commands to domus)
   // don't forget to set a default value for these, in case you start from the command line! :)
   ros::param::param<double>("~update_rate_hz", update_rate_hz, 10);
   ros::param::param<double>("~step_size_meters", step_size_meters, 0.01);
   ros::param::param<std::string>("~robot_type", robot_type, "niryo");
+  ros::param::param<std::string>("~link_prefix", link_prefix, "");
+  std::string robot_description_param_name = link_prefix + "robot_description";
 
   DomusInterface* domus_interface;
   if (robot_type == "niryo")
@@ -87,7 +89,7 @@ int main(int argc, char **argv)
   std::cout << "Waiting 5 sec for DomusInterface in case it's slow to come up";
   ros::Duration(5).sleep();
   std::cout << "Done waiting 5 sec for DomusInterface in case it's slow to come up";
-  TrackPoseService trackPoseService(update_rate_hz, step_size_meters, domus_interface, &n);
+  TrackPoseService trackPoseService(update_rate_hz, step_size_meters, domus_interface, &n, robot_description_param_name);
   std::cout << "Waiting for trackPoseService in case it's slow to come up" << std::endl;
   ros::Duration(5).sleep();
   ros::ServiceServer service = n.advertiseService("update_pose_target", &TrackPoseService::handle_target_update, &trackPoseService);

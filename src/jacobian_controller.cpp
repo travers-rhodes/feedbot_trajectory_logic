@@ -14,8 +14,8 @@ const double MIN_TIME_TO_REACH_NEW = 0.5;
 const double TRANS_SPEED = 0.5;
  
 //constructor
-JacobianController::JacobianController(double trans_step_size_meters,  DomusInterface* domus_interface, ros::NodeHandle* n)
-  : robot_model_loader_("robot_description"),
+JacobianController::JacobianController(double trans_step_size_meters,  DomusInterface* domus_interface, ros::NodeHandle* n, std::string robot_description_param_name)
+  : robot_model_loader_(robot_description_param_name),
     _trans_step_size_meters(trans_step_size_meters)
 {
   kinematic_model_ = robot_model_loader_.getModel();
