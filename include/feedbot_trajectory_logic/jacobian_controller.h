@@ -35,4 +35,5 @@ class JacobianController
     sensor_msgs::JointState joint_state_;
     DomusInterface* domus_interface_;
     float _trans_step_size_meters;
+    std::string link_prefix_;
 };

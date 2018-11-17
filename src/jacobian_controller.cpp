@@ -14,10 +14,11 @@ const double MIN_TIME_TO_REACH_NEW = 0.5;
 const double TRANS_SPEED = 0.5;
  
 //constructor
-JacobianController::JacobianController(double trans_step_size_meters,  DomusInterface* domus_interface, ros::NodeHandle* n, std::string robot_description_param_name)
-  : robot_model_loader_(robot_description_param_name),
+JacobianController::JacobianController(double trans_step_size_meters,  DomusInterface* domus_interface, ros::NodeHandle* n, std::string link_prefix)
+  : robot_model_loader_("robot_description"),
     _trans_step_size_meters(trans_step_size_meters)
 {
+  link_prefix_ = link_prefix;
   kinematic_model_ = robot_model_loader_.getModel();
   domus_interface_ = domus_interface;
   domus_interface_->InitializeConnection();
@@ -40,10 +41,10 @@ JacobianController::JacobianController(double trans_step_size_meters,  DomusInte
   std::cout << "Moving to default position" << std::endl;
   domus_interface->SendTargetAngles(initial_joint_values, 3);
   kinematic_state_->setJointGroupPositions(joint_model_group_, initial_joint_values);  
-  current_pose_ = kinematic_state_->getGlobalLinkTransform("spoon_link");
+  current_pose_ = kinematic_state_->getGlobalLinkTransform(link_prefix_ + "spoon_link");
   
   // set up joint publishing
-  joint_pub_ = n->advertise<sensor_msgs::JointState>("domus/robot/joint_states", 1);
+  joint_pub_ = n->advertise<sensor_msgs::JointState>("joint_states", 1);
   std::cout << "Sleeping for 2 seconds to get to initial position";
   ros::Duration(2).sleep();
 }
@@ -137,7 +138,7 @@ JacobianController::make_step_to_target_pose(const geometry_msgs::Pose &target_p
   if (successful_move) {
     // update the state of this class to reflect the new robot position, and publish the new robot position.
     kinematic_state_->setJointGroupPositions(joint_model_group_, new_joint_values);  
-    current_pose_ = kinematic_state_->getGlobalLinkTransform("spoon_link");
+    current_pose_ = kinematic_state_->getGlobalLinkTransform(link_prefix_+"spoon_link");
   }
 
   publish_robot_state();
@@ -185,7 +186,7 @@ JacobianController::get_cylindrical_jacobian()
 {
   Eigen::Vector3d reference_point_position(0.0,0.0,0.0);
   Eigen::MatrixXd jacobian;
-  const moveit::core::LinkModel *link_model = kinematic_state_->getLinkModel("spoon_link");
+  const moveit::core::LinkModel *link_model = kinematic_state_->getLinkModel(link_prefix_+"spoon_link");
   kinematic_state_->getJacobian(joint_model_group_,
     link_model,
     reference_point_position,
