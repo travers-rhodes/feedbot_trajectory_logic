@@ -9,6 +9,7 @@
 #include <feedbot_trajectory_logic/jacobian_controller.h>
 #include "feedbot_trajectory_logic/TrackPose.h"
 #include "feedbot_trajectory_logic/niryo_interface.h"
+#include "feedbot_trajectory_logic/custom_domus_interface.h"
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include "geometry_msgs/Pose.h"

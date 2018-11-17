@@ -13,7 +13,7 @@ NiryoInterface::NiryoInterface()
 void
 NiryoInterface::InitializeConnection()
 {
-  ac_ = std::make_shared<actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>>("/niryo_one_follow_joint_trajectory_controller/follow_joint_trajectory", true);
+  ac_ = std::make_shared<actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>>("niryo_one_follow_joint_trajectory_controller/follow_joint_trajectory", true);
   ac_->waitForServer();
 }
 

@@ -2,7 +2,7 @@
 
 TrackPoseService::TrackPoseService(double update_rate_hz, double step_size_meters, DomusInterface* domus_interface, ros::NodeHandle* n) : controller(step_size_meters, domus_interface, n), _update_rate_hz(update_rate_hz)
 {
-  dist_pub_ = n->advertise<std_msgs::Float64>("/distance_to_target", 1);
+  dist_pub_ = n->advertise<std_msgs::Float64>("distance_to_target", 1);
 
   is_active = false;
 }
@@ -62,18 +62,31 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
   bool is_simulation, is_simulate_spoon;
   double update_rate_hz, step_size_meters;
+  std::string robot_type;
   // how frequently do we send a (possibly new) target to the jacobian_controller
   // (which itself has a timer for how frequently to send commands to domus)
   // don't forget to set a default value for these, in case you start from the command line! :)
   ros::param::param<double>("~update_rate_hz", update_rate_hz, 10);
   ros::param::param<double>("~step_size_meters", step_size_meters, 0.01);
+  ros::param::param<std::string>("~robot_type", robot_type, "niryo");
 
   DomusInterface* domus_interface;
-  domus_interface = new NiryoInterface();
+  if (robot_type == "niryo")
+  { 
+    std::cout << "Running code on a standard Niryo robot";
+    domus_interface = new NiryoInterface();
+  } else if (robot_type == "custom_domus") {
+    std::cout << "Running code on a custom Domus robot";
+    domus_interface = new CustomDomusInterface();
+  } else {
+    std::cout << "Simulating code without connecting to any robot";
+    domus_interface = new DomusInterface();
+  }
   ros::AsyncSpinner spinner(1); // use 1 thread async for callbacks
   spinner.start();
-  std::cout << "Waiting for DomusInterface in case it's slow to come up";
+  std::cout << "Waiting 5 sec for DomusInterface in case it's slow to come up";
   ros::Duration(5).sleep();
+  std::cout << "Done waiting 5 sec for DomusInterface in case it's slow to come up";
   TrackPoseService trackPoseService(update_rate_hz, step_size_meters, domus_interface, &n);
   std::cout << "Waiting for trackPoseService in case it's slow to come up" << std::endl;
   ros::Duration(5).sleep();

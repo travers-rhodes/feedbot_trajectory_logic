@@ -26,6 +26,13 @@ JacobianController::JacobianController(double trans_step_size_meters,  DomusInte
   kinematic_state_->setToDefaultValues();
 
   joint_model_group_ = kinematic_model_->getJointModelGroup("arm");
+  std::cout << "BOY HAVE WE GOT LINKS FOR YOU!!!!!\n"; 
+  std::vector<std::string> linkNames = joint_model_group_->getLinkModelNames();
+  for (std::string link : linkNames)
+  {
+    std::cout << link << " ,  ";
+  }
+  std::cout << "BOY HAVE WE GOT LINKS FOR YOU!!!!!\n"; 
 
   std::vector<double> initial_joint_values { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   //std::cout << "Waiting to give time for connection to Arduino to be established" << std::endl;
@@ -36,7 +43,7 @@ JacobianController::JacobianController(double trans_step_size_meters,  DomusInte
   current_pose_ = kinematic_state_->getGlobalLinkTransform("spoon_link");
   
   // set up joint publishing
-  joint_pub_ = n->advertise<sensor_msgs::JointState>("/domus/robot/joint_states", 1);
+  joint_pub_ = n->advertise<sensor_msgs::JointState>("domus/robot/joint_states", 1);
   std::cout << "Sleeping for 2 seconds to get to initial position";
   ros::Duration(2).sleep();
 }
