@@ -24,14 +24,12 @@ class JacobianController
     void scale_down_step(double step_scale, Eigen::Vector3d &trans_diff, double &rot_angle, Eigen::Vector3d &cylindrical_diff);
     Eigen::VectorXd get_joint_delta(Eigen::Vector3d cylindrical_diff, double rot_angle, Eigen::Vector3d rot_axis);
     Eigen::MatrixXd get_cylindrical_jacobian();
-    void publish_robot_state();
 
     Eigen::Affine3d current_pose_;
     robot_state::RobotStatePtr kinematic_state_;
     const robot_state::JointModelGroup* joint_model_group_;
     robot_model::RobotModelPtr kinematic_model_;
     robot_model_loader::RobotModelLoader robot_model_loader_;
-    ros::Publisher joint_pub_;
     sensor_msgs::JointState joint_state_;
     DomusInterface* domus_interface_;
     float _trans_step_size_meters;

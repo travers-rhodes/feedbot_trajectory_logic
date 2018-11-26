@@ -8,6 +8,7 @@
 #include <ros/ros.h>
 #include <feedbot_trajectory_logic/jacobian_controller.h>
 #include "feedbot_trajectory_logic/TrackPose.h"
+#include "feedbot_trajectory_logic/joint_echoing_interface.h"
 #include "feedbot_trajectory_logic/niryo_interface.h"
 #include "feedbot_trajectory_logic/custom_domus_interface.h"
 #include <Eigen/Dense>

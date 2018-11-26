@@ -43,8 +43,6 @@ JacobianController::JacobianController(double trans_step_size_meters,  DomusInte
   kinematic_state_->setJointGroupPositions(joint_model_group_, initial_joint_values);  
   current_pose_ = kinematic_state_->getGlobalLinkTransform(link_prefix_ + "spoon_link");
   
-  // set up joint publishing
-  joint_pub_ = n->advertise<sensor_msgs::JointState>("joint_states", 1);
   std::cout << "Sleeping for 2 seconds to get to initial position";
   ros::Duration(2).sleep();
 }
@@ -136,13 +134,10 @@ JacobianController::make_step_to_target_pose(const geometry_msgs::Pose &target_p
   bool successful_move = domus_interface_->SendTargetAngles(new_joint_values, std::max(MIN_TIME_TO_REACH_NEW, trans_dist / TRANS_SPEED));
 
   if (successful_move) {
-    // update the state of this class to reflect the new robot position, and publish the new robot position.
+    // update the state of this class to reflect the new robot position
     kinematic_state_->setJointGroupPositions(joint_model_group_, new_joint_values);  
     current_pose_ = kinematic_state_->getGlobalLinkTransform(link_prefix_+"spoon_link");
   }
-
-  publish_robot_state();
-
   // return 1 to say we have not yet arrived at the target 
   return 1.0;
 }
@@ -200,22 +195,3 @@ JacobianController::get_cylindrical_jacobian()
   Eigen::Matrix<double,6,6> cyl_jacobian = rect_to_cyl_jacob * jacobian;
   return cyl_jacobian;
 }
-
-void
-JacobianController::publish_robot_state()
-{
-  const std::vector<std::string> &joint_names = joint_model_group_->getJointModelNames();
-  std::vector<double> joint_values;
-  kinematic_state_->copyJointGroupPositions(joint_model_group_, joint_values);
-  joint_state_.header.stamp = ros::Time::now();
-  joint_state_.name.resize(joint_values.size());
-  joint_state_.position.resize(joint_values.size());
-  for (int i = 0; i < joint_values.size(); i++) {
-    joint_state_.name[i] = joint_names[i];
-    joint_state_.position[i] = joint_values[i];
-  }
-  joint_pub_.publish(joint_state_);
-  return;
-}
-
-

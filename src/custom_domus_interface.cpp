@@ -7,7 +7,7 @@
 
 const uint8_t REQUEST_JOINT_ANGLES = 136;
 
-CustomDomusInterface::CustomDomusInterface()
+CustomDomusInterface::CustomDomusInterface(ros::NodeHandle* n) : JointEchoingInterface(n)
 {
 }
 
@@ -77,5 +77,6 @@ CustomDomusInterface::SendTargetAngles(const std::vector<double> &joint_angles, 
   ser.write(command, 13);
   ser.flush();
   //ROS_INFO_STREAM("command sent");
+  PublishRobotState(joint_angles);
   return true;
 }

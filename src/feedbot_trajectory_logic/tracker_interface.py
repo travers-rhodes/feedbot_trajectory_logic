@@ -10,10 +10,10 @@ from geometry_msgs.msg import Pose, Point, PointStamped, Quaternion
 from camera_calibration import CameraCalibration
 
 class TrackerInterface:
-  def __init__(self, defaultQuat):
+  def __init__(self, defaultQuat, service_name='update_pose_target'):
     self.cameraCalib = CameraCalibration()
-    rospy.wait_for_service('update_pose_target', timeout=None)
-    self._update_target = rospy.ServiceProxy('update_pose_target', TrackPose)
+    rospy.wait_for_service(service_name, timeout=None)
+    self._update_target = rospy.ServiceProxy(service_name, TrackPose)
     self.pose_target_listener = None
     self.mouth_target_listener = None
     self.defaultQuat = defaultQuat 

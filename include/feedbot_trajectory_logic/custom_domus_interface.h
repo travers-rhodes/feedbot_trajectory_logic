@@ -5,15 +5,16 @@
 #ifndef CUSTOM_DOMUS_INTERFACE_H_
 #define CUSTOM_DOMUS_INTERFACE_H_
 
-#include "feedbot_trajectory_logic/domus_interface.h"
+#include "feedbot_trajectory_logic/joint_echoing_interface.h"
 #include <ros/ros.h>
 #include <serial/serial.h>
 #include <math.h>
+#include <sensor_msgs/JointState.h>
 
-class CustomDomusInterface : public DomusInterface
+class CustomDomusInterface : public JointEchoingInterface
 {
   public:
-    CustomDomusInterface();
+    CustomDomusInterface(ros::NodeHandle* n);
     virtual void InitializeConnection();
     virtual bool SendTargetAngles(const std::vector<double> &joint_angles, float secs);
   private:

@@ -78,10 +78,10 @@ int main(int argc, char **argv)
     domus_interface = new NiryoInterface();
   } else if (robot_type == "custom_domus") {
     std::cout << "Running code on a custom Domus robot";
-    domus_interface = new CustomDomusInterface();
+    domus_interface = new CustomDomusInterface(&n);
   } else {
     std::cout << "Simulating code without connecting to any robot";
-    domus_interface = new DomusInterface();
+    domus_interface = new JointEchoingInterface(&n);
   }
   ros::AsyncSpinner spinner(1); // use 1 thread async for callbacks
   spinner.start();
