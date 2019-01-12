@@ -2,28 +2,27 @@
 // This class connects to DOMUS 
 // and can be used to send target angles for DOMUS to move to
 //
-#include "feedbot_trajectory_logic/niryo_interface.h"
+#include "feedbot_trajectory_logic/ros_robot_interface.h"
 
-const uint8_t REQUEST_JOINT_ANGLES = 136;
-
-NiryoInterface::NiryoInterface()
+RosRobotInterface::RosRobotInterface(std::string follow_joint_trajectory_name, CustomRobotParams robot_params) : RobotInterface(robot_params)
 {
+  follow_joint_trajectory_name_ = follow_joint_trajectory_name;
 }
 
 void
-NiryoInterface::InitializeConnection()
+RosRobotInterface::InitializeConnection()
 {
-  ac_ = std::make_shared<actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>>("niryo_one_follow_joint_trajectory_controller/follow_joint_trajectory", true);
+  ac_ = std::make_shared<actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>>(follow_joint_trajectory_name_, true);
   ac_->waitForServer();
 }
 
 // move to the target joint_angles and the motion should take you secs seconds.
 // return false if we know the robot motion failed
 bool
-NiryoInterface::SendTargetAngles(const std::vector<double> &joint_angles, float secs)
+RosRobotInterface::SendTargetAngles(const std::vector<double> &joint_angles, float secs)
 {
   for (int i = 0; i < joint_angles.size(); i++) {
-    if (joint_angles[i] > max_joint_angles[i] || joint_angles[i] < min_joint_angles[i]) 
+    if (joint_angles[i] > max_joint_angles_[i] || joint_angles[i] < min_joint_angles_[i]) 
     {
       ROS_ERROR_STREAM("The requested joint " << i << " was " << joint_angles[i] << " which is past the joint limits.");
       return false;
@@ -34,13 +33,12 @@ NiryoInterface::SendTargetAngles(const std::vector<double> &joint_angles, float 
   // one command sent at a time 
   control_msgs::FollowJointTrajectoryGoal goal;
   trajectory_msgs::JointTrajectory joint_trajectory;
-  std::vector<std::string> joint_names = {"joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6"};
   std::vector<trajectory_msgs::JointTrajectoryPoint> points;
 
   std::vector<control_msgs::JointTolerance> tols;
   for (int i = 0; i < joint_angles.size(); i++) {
     control_msgs::JointTolerance tol;
-    tol.name = joint_names[i];
+    tol.name = joint_names_[i];
     tol.position = 5;
     tol.velocity = 5;
     tol.acceleration = 5;
@@ -53,7 +51,7 @@ NiryoInterface::SendTargetAngles(const std::vector<double> &joint_angles, float 
   points.push_back(point);
 
   // now, finally, fill out the structure
-  joint_trajectory.joint_names = joint_names;
+  joint_trajectory.joint_names = joint_names_;
   joint_trajectory.points = points;
   goal.trajectory = joint_trajectory;
   goal.path_tolerance = tols;

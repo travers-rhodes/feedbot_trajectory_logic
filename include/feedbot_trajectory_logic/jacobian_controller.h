@@ -11,13 +11,13 @@
 #include <std_msgs/Float64.h>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
-#include <feedbot_trajectory_logic/domus_interface.h>
+#include <feedbot_trajectory_logic/robot_interface.h>
 #include <feedbot_trajectory_logic/transform_helpers.h>
 
 class JacobianController
 {
   public:
-    JacobianController(double trans_step_size_meters, DomusInterface* domus_interface, ros::NodeHandle* n, std::string robot_description_param_name);
+    JacobianController(double trans_step_size_meters, RobotInterface* robot_interface, ros::NodeHandle* n, std::string robot_description_param_name);
     double make_step_to_target_pose(const geometry_msgs::Pose &target_pose);
 
   private:
@@ -31,7 +31,7 @@ class JacobianController
     robot_model::RobotModelPtr kinematic_model_;
     robot_model_loader::RobotModelLoader robot_model_loader_;
     sensor_msgs::JointState joint_state_;
-    DomusInterface* domus_interface_;
+    RobotInterface* robot_interface_;
     float _trans_step_size_meters;
     std::string link_prefix_;
 };

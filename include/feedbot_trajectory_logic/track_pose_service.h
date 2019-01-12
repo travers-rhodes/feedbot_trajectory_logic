@@ -9,7 +9,7 @@
 #include <feedbot_trajectory_logic/jacobian_controller.h>
 #include "feedbot_trajectory_logic/TrackPose.h"
 #include "feedbot_trajectory_logic/joint_echoing_interface.h"
-#include "feedbot_trajectory_logic/niryo_interface.h"
+#include "feedbot_trajectory_logic/ros_robot_interface.h"
 #include "feedbot_trajectory_logic/custom_domus_interface.h"
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
@@ -18,7 +18,7 @@
 class TrackPoseService
 {
   public:
-    TrackPoseService(double update_rate_hz, double step_size_meters, DomusInterface* domus_interface, ros::NodeHandle*, std::string link_prefix);
+    TrackPoseService(double update_rate_hz, double step_size_meters, RobotInterface* robot_interface, ros::NodeHandle*, std::string link_prefix);
     bool handle_target_update(feedbot_trajectory_logic::TrackPose::Request &req,
            feedbot_trajectory_logic::TrackPose::Response &res);
     void run_tracking();

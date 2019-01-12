@@ -4,7 +4,7 @@
 //
 #include "feedbot_trajectory_logic/joint_echoing_interface.h"
 
-JointEchoingInterface::JointEchoingInterface(ros::NodeHandle* n)
+JointEchoingInterface::JointEchoingInterface(ros::NodeHandle* n, CustomRobotParams robot_params) : RobotInterface(robot_params)
 {
   // set up joint publishing
   joint_pub_ = n->advertise<sensor_msgs::JointState>("joint_states", 1);
