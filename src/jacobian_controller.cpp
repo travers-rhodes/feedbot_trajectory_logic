@@ -14,14 +14,14 @@ const double MIN_TIME_TO_REACH_NEW = 0.5;
 const double TRANS_SPEED = 0.5;
  
 //constructor
-JacobianController::JacobianController(double trans_step_size_meters,  DomusInterface* domus_interface, ros::NodeHandle* n, std::string link_prefix)
+JacobianController::JacobianController(double trans_step_size_meters,  RobotInterface* robot_interface, ros::NodeHandle* n, std::string link_prefix)
   : robot_model_loader_("robot_description"),
     _trans_step_size_meters(trans_step_size_meters)
 {
   link_prefix_ = link_prefix;
   kinematic_model_ = robot_model_loader_.getModel();
-  domus_interface_ = domus_interface;
-  domus_interface_->InitializeConnection();
+  robot_interface_ = robot_interface;
+  robot_interface_->InitializeConnection();
 
   kinematic_state_ = robot_state::RobotStatePtr(new robot_state::RobotState(kinematic_model_));
   kinematic_state_->setToDefaultValues();
@@ -39,7 +39,7 @@ JacobianController::JacobianController(double trans_step_size_meters,  DomusInte
   //std::cout << "Waiting to give time for connection to Arduino to be established" << std::endl;
   //ros::Duration(2).sleep();
   std::cout << "Moving to default position" << std::endl;
-  domus_interface->SendTargetAngles(initial_joint_values, 3);
+  robot_interface->SendTargetAngles(initial_joint_values, 3);
   kinematic_state_->setJointGroupPositions(joint_model_group_, initial_joint_values);  
   current_pose_ = kinematic_state_->getGlobalLinkTransform(link_prefix_ + "spoon_link");
   
@@ -131,7 +131,7 @@ JacobianController::make_step_to_target_pose(const geometry_msgs::Pose &target_p
     new_joint_values[i] = joint_delta(i) + current_joint_values[i];
   }
 
-  bool successful_move = domus_interface_->SendTargetAngles(new_joint_values, std::max(MIN_TIME_TO_REACH_NEW, trans_dist / TRANS_SPEED));
+  bool successful_move = robot_interface_->SendTargetAngles(new_joint_values, std::max(MIN_TIME_TO_REACH_NEW, trans_dist / TRANS_SPEED));
 
   if (successful_move) {
     // update the state of this class to reflect the new robot position

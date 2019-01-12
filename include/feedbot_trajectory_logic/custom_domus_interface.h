@@ -14,7 +14,7 @@
 class CustomDomusInterface : public JointEchoingInterface
 {
   public:
-    CustomDomusInterface(ros::NodeHandle* n);
+    CustomDomusInterface(ros::NodeHandle* n, CustomRobotParams robot_params);
     virtual void InitializeConnection();
     virtual bool SendTargetAngles(const std::vector<double> &joint_angles, float secs);
   private:

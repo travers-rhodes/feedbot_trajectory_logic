@@ -136,10 +136,10 @@ include_directories(
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
    src/jacobian_controller.cpp
-   src/domus_interface.cpp
+   src/robot_interface.cpp
    src/joint_echoing_interface.cpp
    src/custom_domus_interface.cpp
-   src/niryo_interface.cpp
+   src/ros_robot_interface.cpp
    src/transform_helpers.cpp
 )
 

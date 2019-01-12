@@ -7,7 +7,7 @@
 
 const uint8_t REQUEST_JOINT_ANGLES = 136;
 
-CustomDomusInterface::CustomDomusInterface(ros::NodeHandle* n) : JointEchoingInterface(n)
+CustomDomusInterface::CustomDomusInterface(ros::NodeHandle* n, CustomRobotParams robot_params) : JointEchoingInterface(n, robot_params)
 {
 }
 
@@ -35,7 +35,7 @@ bool
 CustomDomusInterface::SendTargetAngles(const std::vector<double> &joint_angles, float secs)
 {
   for (int i = 0; i < joint_angles.size(); i++) {
-    if (joint_angles[i] > max_joint_angles[i] || joint_angles[i] < min_joint_angles[i]) 
+    if (joint_angles[i] > max_joint_angles_[i] || joint_angles[i] < min_joint_angles_[i]) 
     {
       ROS_ERROR_STREAM("The requested joint " << i << " was " << joint_angles[i] << " which is past the joint limits.");
       return false;
