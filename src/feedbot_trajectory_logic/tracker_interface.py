@@ -29,10 +29,13 @@ class TrackerInterface:
     self.stop_moving() 
     self.mouth_target_listener = rospy.Subscriber(mouth_point_topic, PointStamped, self._update_target_camera_frame, (robot_coord_offset))
   
-  def start_tracking_fixed_target(self, robot_coord_point):
+  def start_tracking_fixed_pose(self, robot_coord_point, robot_coord_quat):
     self.stop_moving() 
     # you just send the target point, you don't need to continually update it
-    self._update_target(target=Pose(Point(robot_coord_point[0], robot_coord_point[1], robot_coord_point[2]), self.defaultQuat))
+    self._update_target(target=Pose(Point(robot_coord_point[0], robot_coord_point[1], robot_coord_point[2]), robot_coord_quat))
+  
+  def start_tracking_fixed_target(self, robot_coord_point):
+    self.start_tracking_fixed_pose(robot_coord_point, self.defaultQuat) 
 
   def stop_moving(self):
     self._stop_updating_target()
