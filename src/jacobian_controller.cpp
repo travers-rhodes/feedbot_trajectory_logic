@@ -26,7 +26,7 @@ JacobianController::JacobianController(double trans_step_size_meters,  RobotInte
   kinematic_state_ = robot_state::RobotStatePtr(new robot_state::RobotState(kinematic_model_));
   kinematic_state_->setToDefaultValues();
 
-  joint_model_group_ = kinematic_model_->getJointModelGroup("arm");
+  joint_model_group_ = kinematic_model_->getJointModelGroup(robot_interface_->srdf_group_name_);
   std::cout << "BOY HAVE WE GOT LINKS FOR YOU!!!!!\n"; 
   std::vector<std::string> linkNames = joint_model_group_->getLinkModelNames();
   for (std::string link : linkNames)
@@ -35,13 +35,12 @@ JacobianController::JacobianController(double trans_step_size_meters,  RobotInte
   }
   std::cout << "BOY HAVE WE GOT LINKS FOR YOU!!!!!\n"; 
 
-  std::vector<double> initial_joint_values { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   //std::cout << "Waiting to give time for connection to Arduino to be established" << std::endl;
   //ros::Duration(2).sleep();
   std::cout << "Moving to default position" << std::endl;
-  robot_interface->SendTargetAngles(initial_joint_values, 3);
-  kinematic_state_->setJointGroupPositions(joint_model_group_, initial_joint_values);  
-  current_pose_ = kinematic_state_->getGlobalLinkTransform(link_prefix_ + "spoon_link");
+  robot_interface->SendTargetAngles(robot_interface_->initial_joint_values_, 3);
+  kinematic_state_->setJointGroupPositions(joint_model_group_, robot_interface->initial_joint_values_);  
+  current_pose_ = kinematic_state_->getGlobalLinkTransform(link_prefix_ + robot_interface_->end_effector_link_);
   
   std::cout << "Sleeping for 2 seconds to get to initial position";
   ros::Duration(2).sleep();
@@ -136,7 +135,7 @@ JacobianController::make_step_to_target_pose(const geometry_msgs::Pose &target_p
   if (successful_move) {
     // update the state of this class to reflect the new robot position
     kinematic_state_->setJointGroupPositions(joint_model_group_, new_joint_values);  
-    current_pose_ = kinematic_state_->getGlobalLinkTransform(link_prefix_+"spoon_link");
+    current_pose_ = kinematic_state_->getGlobalLinkTransform(link_prefix_ + robot_interface_->end_effector_link_);
   }
   // return 1 to say we have not yet arrived at the target 
   return 1.0;
@@ -181,7 +180,7 @@ JacobianController::get_cylindrical_jacobian()
 {
   Eigen::Vector3d reference_point_position(0.0,0.0,0.0);
   Eigen::MatrixXd jacobian;
-  const moveit::core::LinkModel *link_model = kinematic_state_->getLinkModel(link_prefix_+"spoon_link");
+  const moveit::core::LinkModel *link_model = kinematic_state_->getLinkModel(link_prefix_+ robot_interface_->end_effector_link_);
   kinematic_state_->getJacobian(joint_model_group_,
     link_model,
     reference_point_position,

@@ -77,6 +77,10 @@ int main(int argc, char **argv)
   { 
     std::cout << "Running code on a standard Niryo robot";
     robot_interface = new RosRobotInterface("niryo_one_follow_joint_trajectory_controller/follow_joint_trajectory", robot_params);
+  } else if (robot_type == "ur5") { 
+    std::cout << "Running code on a UR5 robot";
+    UR5RobotParams ur5_robot_params;
+    robot_interface = new RosRobotInterface("arm_controller/follow_joint_trajectory", ur5_robot_params);
   } else if (robot_type == "custom_domus") {
     std::cout << "Running code on a custom Domus robot";
     robot_interface = new CustomDomusInterface(&n, robot_params);

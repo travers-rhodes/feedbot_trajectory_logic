@@ -15,7 +15,8 @@ class RobotInterface
     RobotInterface(CustomRobotParams robot_params);
     virtual void InitializeConnection();
     virtual bool SendTargetAngles(const std::vector<double> &joint_angles, float secs);
-    std::vector<double> max_joint_angles_, min_joint_angles_;
+    std::vector<double> max_joint_angles_, min_joint_angles_, initial_joint_values_;
     std::vector<std::string> joint_names_;
+    std::string srdf_group_name_, end_effector_link_;
 };
 #endif
