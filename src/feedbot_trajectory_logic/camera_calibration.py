@@ -34,7 +34,7 @@ class CameraCalibration:
     self.br = tf.TransformBroadcaster()
     rospy.logwarn("camera calibration initialized")
 
-    rospy.Timer(rospy.Duration(0.01), self.broadcastTransform)
+    #rospy.Timer(rospy.Duration(0.01), self.broadcastTransform)
     rospy.logwarn("sent first message")
 
   def loadTransform(self):
