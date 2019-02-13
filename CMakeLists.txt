@@ -117,8 +117,8 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-#  LIBRARIES feedbot_trajectory_logic 
-#  CATKIN_DEPENDS moveit_msgs moveit_ros_planning_interface niryo_one_moveit_config roscpp
+  LIBRARIES feedbot_trajectory_logic 
+  CATKIN_DEPENDS serial 
 #  DEPENDS system_lib
 )
 
