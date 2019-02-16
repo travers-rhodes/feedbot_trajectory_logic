@@ -84,6 +84,20 @@ JacobianController::make_step_to_target_pose(const geometry_msgs::Pose &target_p
   Eigen::AngleAxisd rot_axis_angle(rot_diff);
   double rot_angle = rot_axis_angle.angle();
   Eigen::Vector3d rot_axis = rot_axis_angle.axis();
+  
+  // TSR is ashamed that this is not in a testable helper function.
+  // Maybe this is just an issue with "old" Eigen... (optimism)
+  if (rot_angle < 0)
+  {
+    rot_angle *= -1.0;
+    rot_axis = rot_axis *= -1.0;
+  }
+
+  if (rot_angle > M_PI)
+  {
+    rot_angle = 2 * M_PI - rot_angle;
+    rot_axis = rot_axis *= -1;
+  }
 
   // cylindrical_diff is of the form dR, dTheta, dZ
   // where R is sqrt(x^2 + y^2), theta is arctan2(y,x), and z is z

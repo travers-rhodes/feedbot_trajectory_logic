@@ -32,8 +32,8 @@ class UR5RobotParams : public CustomRobotParams
   public:
     UR5RobotParams()
     {
-      std::vector<double> max = { 3, 3, 3, 3, 3, 3 }; 
-      std::vector<double> min = { -3, -3, -6, -6, -3, -3};
+      std::vector<double> max = { 6, 6, 6, 6, 6, 6 }; 
+      std::vector<double> min = { -6, -6, -6, -6, -6, -6};
       std::vector<double> initial_joint_vals = { 1.5, -1.5, 1.5, -1.5, -1.5, 0.0};
       std::vector<std::string> names = {"shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint", "wrist_1_joint", "wrist_2_joint", "wrist_3_joint"};
       max_joint_angles = max;
@@ -41,6 +41,6 @@ class UR5RobotParams : public CustomRobotParams
       initial_joint_values = initial_joint_vals;
       joint_names = names;
       srdf_group_name = "ur5e_arm";
-      end_effector_link = "grasp_point_fixed";
+      end_effector_link = "fork_point";
     };
 };
