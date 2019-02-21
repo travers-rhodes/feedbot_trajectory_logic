@@ -183,7 +183,7 @@ JacobianController::get_joint_delta(Eigen::Vector3d cylindrical_diff, double rot
   // use regularized least squares to compute the required joint angle changes
   //https://eigen.tuxfamily.org/dox/group__LeastSquares.html
   // with the extra addition that we use a tiny regularization term to reduce problems due to singularities, so we're solving (J^T J + lambda * I)^-1 J^T Y
-  double lambda = 0.05;
+  double lambda = 0.02;
   Eigen::VectorXd joint_delta = (jacobian.transpose() * jacobian + (lambda * Eigen::MatrixXd::Identity(6,6))).ldlt().solve(jacobian.transpose() * target_delta);
   return joint_delta;
 }
