@@ -15,7 +15,6 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   sensor_msgs
   std_msgs
-  serial
   interactive_markers
   visualization_msgs
   tf
@@ -118,7 +117,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES feedbot_trajectory_logic 
-  CATKIN_DEPENDS serial 
+#  CATKIN_DEPENDS
 #  DEPENDS system_lib
 )
 
@@ -138,7 +137,7 @@ add_library(${PROJECT_NAME}
    src/jacobian_controller.cpp
    src/robot_interface.cpp
    src/joint_echoing_interface.cpp
-   src/custom_domus_interface.cpp
+   # src/custom_domus_interface.cpp --Requires serial
    src/ros_robot_interface.cpp
    src/transform_helpers.cpp
 )

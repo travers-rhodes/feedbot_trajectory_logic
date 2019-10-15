@@ -4,16 +4,18 @@
   <arg name="calibrate_only" default="false"/>
   <arg name="just_follow_mouth" default="false"/>
 
-  <include file="$(find niryo_one_moveit_config)/launch/planning_context.launch">
+  <include file="$(find gen3_robotiq_2f_85_move_it_config)/launch/planning_context.launch">
     <arg name="load_robot_description" value="true"/>
-  </include>
+  </include> 
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="rob_st_pub"/>
 
   <node name="track_pose_service" pkg="feedbot_trajectory_logic" type="track_pose_service" respawn="false" output="screen">
     <!--launch-prefix="/home/travers/run_tmux.sh">-->
     <rosparam command="load"
-              file="$(find niryo_one_moveit_config)/config/kinematics.yaml"/>
+              file="$(find gen3_robotiq_2f_85_move_it_config)/config/kinematics.yaml"/>
     <param name="update_rate_hz" type="double" value="10"/>
-    <param name="step_size_meters" type="double" value="0.03"/>
+    <param name="step_size_meters" type="double" value="0.01"/>
+    <param name="robot_type" type="string" value="gen3_rviz"/>
   </node>
 
   <node name="spoon_feeder" pkg="feedbot_trajectory_logic" type="spoon_feeder.py" unless="$(arg calibrate_only)"> 

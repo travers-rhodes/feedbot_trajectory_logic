@@ -2,7 +2,7 @@ import rospy
 from enum import Enum
 
 from std_msgs.msg import Bool, Float64
-from spoon_perception.srv import ObjectSpoon, ObjectSpoonResponse
+#from spoon_perception.srv import ObjectSpoon, ObjectSpoonResponse
 from geometry_msgs.msg import PointStamped
 
 class State(Enum):
@@ -67,6 +67,9 @@ class DistanceBasedTransitionLogic(TopicBasedTransitionLogic):
       r.sleep()
     return self.next_state
 
+class DummyObjectSpoonResponse:
+    def __init__(self):
+        self.histCorr = 0
 
 class PickUpStateTransitionLogic(TopicBasedTransitionLogic):
   def __init__(self):
@@ -75,7 +78,7 @@ class PickUpStateTransitionLogic(TopicBasedTransitionLogic):
     # what we go to next depends on whether there is food in the spoon
     # however, if we're simulating the spoon we make a dummy call to service
     if rospy.get_param('~simulate_spoon'):
-      self._check_spoon = lambda:ObjectSpoonResponse(0,"dummy")
+      self._check_spoon = lambda:DummyObjectSpoonResponse()
     else:
       self._check_spoon = rospy.ServiceProxy(object_in_spoon_service_name, ObjectSpoon)
 

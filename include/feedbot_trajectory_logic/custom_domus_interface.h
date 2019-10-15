@@ -2,7 +2,7 @@
 // This class connects to DOMUS 
 // and can be used to send target angles for DOMUS to move to
 //
-#ifndef CUSTOM_DOMUS_INTERFACE_H_
+#ifdef CUSTOM_DOMUS_INTERFACE_H_
 #define CUSTOM_DOMUS_INTERFACE_H_
 
 #include "feedbot_trajectory_logic/joint_echoing_interface.h"

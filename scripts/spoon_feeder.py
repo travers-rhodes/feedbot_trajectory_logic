@@ -36,28 +36,28 @@ class SpoonFeeder:
 
   def _update_tracker_based_on_state(self):
     if self.state == State.MOVE_TO_PLATE:
-      self.tracker.start_tracking_fixed_target([0.3,0.05,0.17])
+      self.tracker.start_tracking_fixed_target([0.3 + 0.3,0.05,0.17])
       self.is_first_move_to_plate = False
     elif self.state == State.PICK_UP_FOOD:
       #self.restart_do_pub.publish(Empty())
-      self.xoffset = 0.03-0.1 + (np.random.uniform()-0.5) * 0.04
+      self.xoffset = 0.03-0.1 + (np.random.uniform()-0.5) * 0.04 + 0.3
       self.yoffset = 0.015+0.3
       self.zoffset = rospy.get_param('~z_height')
       self.tracker.start_updating_target_to_pose(self.play_trajectory_topic,[self.xoffset, self.yoffset, self.zoffset])
       self._play_trajectory(String(self.play_trajectory_topic))
     elif self.state == State.PREPARE_FOR_MOUTH:
       #self.restart_do_pub.publish(Empty())
-      self.tracker.start_tracking_fixed_target([0.3,0.15,0.27])
+      self.tracker.start_tracking_fixed_target([0.3 + 0.3,0.15,0.27])
     elif self.state == State.MOVE_TO_MOUTH:
       follow_mouth = rospy.get_param('~follow_mouth')
       if follow_mouth:
         self.tracker.start_updating_target_to_point(rospy.get_param('~mouth_point_topic'))
       else:  
-        self.tracker.start_tracking_fixed_target([0.27,0.25,0.27])
+        self.tracker.start_tracking_fixed_target([0.27 + 0.3,0.25,0.27])
     elif self.state == State.WAIT_IN_MOUTH:
       self.tracker.stop_moving()
     elif self.state == State.PREPARE_FOR_PLATE:
-      self.tracker.start_tracking_fixed_target([0.3,0.15,0.27])
+      self.tracker.start_tracking_fixed_target([0.3 + 0.3,0.15,0.27])
     elif self.state == State.WAIT_FOR_SPOON_CALIBRATION:
       pass
     else:

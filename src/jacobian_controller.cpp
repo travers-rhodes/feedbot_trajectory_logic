@@ -29,6 +29,8 @@ JacobianController::JacobianController(double trans_step_size_meters,  RobotInte
   joint_model_group_ = kinematic_model_->getJointModelGroup(robot_interface_->srdf_group_name_);
   std::cout << "BOY HAVE WE GOT LINKS FOR YOU!!!!!\n"; 
   std::vector<std::string> linkNames = joint_model_group_->getLinkModelNames();
+  // fencepost problem is a funny way to count joints...
+  num_joints_ = linkNames.size() - 1; 
   for (std::string link : linkNames)
   {
     std::cout << link << " ,  ";
@@ -122,13 +124,13 @@ JacobianController::make_step_to_target_pose(const geometry_msgs::Pose &target_p
   Eigen::VectorXd joint_delta = get_joint_delta(cylindrical_diff, rot_angle, rot_axis);
 
   // ensure that no joint rotation is larger than MAX_JOINT_STEP at any given time
-  for(int i = 0; i < 6; i++)
+  for(int i = 0; i < num_joints_; i++)
   {
     double cur_joint_step = std::abs(joint_delta[i]);
     if (cur_joint_step > MAX_JOINT_STEP)
     {
       double scale = MAX_JOINT_STEP / cur_joint_step;
-      for (int j = 0; j < 6; j++)
+      for (int j = 0; j < num_joints_; j++)
       {
         joint_delta[j] = joint_delta[j] * scale;
       }
@@ -138,8 +140,8 @@ JacobianController::make_step_to_target_pose(const geometry_msgs::Pose &target_p
   // actually send the requested angles to the robot
   std::vector<double> current_joint_values;
   kinematic_state_->copyJointGroupPositions(joint_model_group_, current_joint_values);
-  std::vector<double> new_joint_values(6);
-  for(std::size_t i = 0; i < 6; ++i)
+  std::vector<double> new_joint_values(num_joints_);
+  for(std::size_t i = 0; i < num_joints_; ++i)
   {
     new_joint_values[i] = joint_delta(i) + current_joint_values[i];
   }
@@ -184,7 +186,7 @@ JacobianController::get_joint_delta(Eigen::Vector3d cylindrical_diff, double rot
   //https://eigen.tuxfamily.org/dox/group__LeastSquares.html
   // with the extra addition that we use a tiny regularization term to reduce problems due to singularities, so we're solving (J^T J + lambda * I)^-1 J^T Y
   double lambda = 0.02;
-  Eigen::VectorXd joint_delta = (jacobian.transpose() * jacobian + (lambda * Eigen::MatrixXd::Identity(6,6))).ldlt().solve(jacobian.transpose() * target_delta);
+  Eigen::VectorXd joint_delta = (jacobian.transpose() * jacobian + (lambda * Eigen::MatrixXd::Identity(num_joints_,num_joints_))).ldlt().solve(jacobian.transpose() * target_delta);
   return joint_delta;
 }
 
@@ -205,6 +207,6 @@ JacobianController::get_cylindrical_jacobian()
   Eigen::Matrix<double,6,6> rect_to_cyl_jacob = compute_jacob_from_rect_to_cyl(cur_trans);
   //std::cout << "rect_to_cyl_jacob" << rect_to_cyl_jacob << std::endl; 
   
-  Eigen::Matrix<double,6,6> cyl_jacobian = rect_to_cyl_jacob * jacobian;
+  Eigen::Matrix<double,6,Eigen::Dynamic> cyl_jacobian = rect_to_cyl_jacob * jacobian;
   return cyl_jacobian;
 }

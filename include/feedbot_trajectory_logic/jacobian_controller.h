@@ -34,4 +34,5 @@ class JacobianController
     RobotInterface* robot_interface_;
     float _trans_step_size_meters;
     std::string link_prefix_;
+    int num_joints_;
 };

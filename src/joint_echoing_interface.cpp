@@ -27,7 +27,7 @@ JointEchoingInterface::SendTargetAngles(const std::vector<double> &joint_angles,
 void
 JointEchoingInterface::PublishRobotState(const std::vector<double> &joint_values)
 {
-  const std::vector<std::string> &joint_names = {"joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6"};
+  const std::vector<std::string> &joint_names = joint_names_;
   joint_state_.header.stamp = ros::Time::now();
   joint_state_.name.resize(joint_values.size());
   joint_state_.position.resize(joint_values.size());

@@ -1,6 +1,8 @@
 #include <vector>
 #include <string>
 
+#define PI 3.1415926536
+
 class CustomRobotParams
 {
   public:
@@ -42,5 +44,23 @@ class UR5RobotParams : public CustomRobotParams
       joint_names = names;
       srdf_group_name = "ur5e_arm";
       end_effector_link = "fork_point";
+    };
+};
+
+class Gen3RobotParams : public CustomRobotParams
+{
+  public:
+    Gen3RobotParams()
+    {
+      std::vector<double> max = { 6, 6, 6, 6, 6, 6.0, 6.0 }; 
+      std::vector<double> min = { -6, -6, -6, -6, -6, -6, -6.0};
+      std::vector<double> initial_joint_vals = { -PI/4, PI/4, PI/8, PI/2, -PI/4, -PI/4, -PI/2};
+      std::vector<std::string> names = {"joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6", "joint_7"};
+      max_joint_angles = max;
+      min_joint_angles = min;
+      initial_joint_values = initial_joint_vals;
+      joint_names = names;
+      srdf_group_name = "arm";
+      end_effector_link = "end_effector_link";
     };
 };
