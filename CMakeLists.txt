@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   geometry_msgs
   sensor_msgs
+  trajectory_msgs
   std_msgs
   interactive_markers
   visualization_msgs
@@ -68,6 +69,7 @@ add_message_files(
 add_service_files(
   FILES
   TrackPose.srv
+  MoveToPose.srv
   PlayTrajectory.srv
 )
 
@@ -81,6 +83,7 @@ add_service_files(
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
+  trajectory_msgs
   geometry_msgs
   std_msgs
 )
@@ -151,6 +154,7 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(track_pose_service src/track_pose_service.cpp)
+add_executable(move_to_pose_service src/move_to_pose_service.cpp)
 add_executable(domus_controller src/domus_controller.cpp)
 add_executable(interactive_calibration src/interactive_calibration.cpp)
 
@@ -166,6 +170,11 @@ add_executable(interactive_calibration src/interactive_calibration.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(track_pose_service
+   feedbot_trajectory_logic
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(move_to_pose_service
    feedbot_trajectory_logic
    ${catkin_LIBRARIES}
 )

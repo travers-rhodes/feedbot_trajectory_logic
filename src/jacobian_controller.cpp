@@ -47,12 +47,19 @@ JacobianController::JacobianController(double trans_step_size_meters,  RobotInte
   std::cout << "Sleeping for 2 seconds to get to initial position";
   ros::Duration(2).sleep();
 }
+    
+double JacobianController::make_step_to_target_pose(const geometry_msgs::Pose &target_pose){
+  throw;
+}
 
 // returns the distance to the target
 // discretized to 0 (arrived) or 1 (not there yet) currently...
-double
-JacobianController::make_step_to_target_pose(const geometry_msgs::Pose &target_pose)
+JointUpdateResult
+JacobianController::plan_step_to_target_pose(std::vector<double> joint_angles, const geometry_msgs::Pose &target_pose)
 {
+  kinematic_state_->setJointGroupPositions(joint_model_group_, joint_angles);  
+  current_pose_ = kinematic_state_->getGlobalLinkTransform(link_prefix_ + robot_interface_->end_effector_link_);
+
   // convert the input ROS topic pose to the associated Eigen representation
   Eigen::Quaterniond target_quat(target_pose.orientation.w,
                               target_pose.orientation.x,
@@ -72,11 +79,14 @@ JacobianController::make_step_to_target_pose(const geometry_msgs::Pose &target_p
   double trans_dist = distance(cur_trans, target_trans);
   //std::cout << trans_dist << " is the translation distance. " << quat_dist << " is the quat dist" << std::endl;
   //std::cout << target_quat.w() << "," <<  target_quat.vec() << " is the target quat. " << cur_quat.w() << "," << target_quat.vec() << " is the current quat" << std::endl;
+  std::vector<double> current_joint_values;
+  kinematic_state_->copyJointGroupPositions(joint_model_group_, current_joint_values);
+
   if (trans_dist < TRANS_EPSILON &&
       quat_dist < QUAT_EPSILON)
   {
     // No need to move. Return 0 to say we are at the target.
-    return 0.0;
+    return JointUpdateResult(current_joint_values, current_pose_, quat_dist, trans_dist, true);
   }
  
   // Compute the translation and rotation change we need 
@@ -138,23 +148,23 @@ JacobianController::make_step_to_target_pose(const geometry_msgs::Pose &target_p
   }
 
   // actually send the requested angles to the robot
-  std::vector<double> current_joint_values;
-  kinematic_state_->copyJointGroupPositions(joint_model_group_, current_joint_values);
   std::vector<double> new_joint_values(num_joints_);
   for(std::size_t i = 0; i < num_joints_; ++i)
   {
     new_joint_values[i] = joint_delta(i) + current_joint_values[i];
   }
 
-  bool successful_move = robot_interface_->SendTargetAngles(new_joint_values, std::max(MIN_TIME_TO_REACH_NEW, trans_dist / TRANS_SPEED));
+  // TSR: PLAN_BRANCH: for this branch of code, we don't actually move the robot
+  // we just plan out where we _would_ move the robot.
+  //bool successful_move = robot_interface_->SendTargetAngles(new_joint_values, std::max(MIN_TIME_TO_REACH_NEW, trans_dist / TRANS_SPEED));
+  bool successful_move = true;
 
   if (successful_move) {
     // update the state of this class to reflect the new robot position
     kinematic_state_->setJointGroupPositions(joint_model_group_, new_joint_values);  
     current_pose_ = kinematic_state_->getGlobalLinkTransform(link_prefix_ + robot_interface_->end_effector_link_);
   }
-  // return 1 to say we have not yet arrived at the target 
-  return 1.0;
+  return JointUpdateResult(new_joint_values, current_pose_, quat_dist, trans_dist, false);
 }
 
 // scale down the step by step_scale amount

@@ -21,7 +21,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "domus_controller");
   ros::NodeHandle n;
   NiryoRobotParams robot_params;
-  RosRobotInterface niryo_robot("niryo_one_follow_joint_trajectory_controller/follow_joint_trajectory", robot_params);
+  RosRobotInterface niryo_robot("niryo_one_follow_joint_trajectory_controller/follow_joint_trajectory", "joint_states", &n, robot_params);
   domus = &niryo_robot;
   domus->InitializeConnection();
   ros::Subscriber sub = n.subscribe("set_joint_angles", 10, set_angles_callback);

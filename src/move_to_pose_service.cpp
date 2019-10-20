@@ -1,59 +1,48 @@
-#include <feedbot_trajectory_logic/track_pose_service.h>
+#include <feedbot_trajectory_logic/move_to_pose_service.h>
 
-TrackPoseService::TrackPoseService(double update_rate_hz, double step_size_meters, RobotInterface* robot_interface, ros::NodeHandle* n, std::string link_prefix) : controller(step_size_meters, robot_interface, n, link_prefix), _update_rate_hz(update_rate_hz)
+MoveToPoseService::MoveToPoseService(double step_size_meters, RobotInterface* robot_interface, ros::NodeHandle* n, std::string link_prefix) : controller_(step_size_meters, robot_interface, n, link_prefix)
 {
-  dist_pub_ = n->advertise<std_msgs::Float64>("distance_to_target", 1);
-
-  is_active = false;
+  robot_interface_ = robot_interface;
 }
 
-// This method only returns when !ros::ok()
-// it continually moves the robot in a step toward the last requested target
-// (or doesn't, if the last request was to stop the robot)
-void TrackPoseService::run_tracking()
+bool MoveToPoseService::move_to_pose(feedbot_trajectory_logic::MoveToPose::Request &req, feedbot_trajectory_logic::MoveToPose::Response &res)
 {
-  ros::Rate loop_rate(_update_rate_hz);
-  while (ros::ok())
+  std::vector<double> joint_positions;
+  std::vector<std::string> joint_names;
+  robot_interface_->GetCurrentAngles(joint_positions, joint_names);
+  std::vector<std::vector<double>> joint_locs = plan_path(joint_positions, req.target);
+  trajectory_msgs::JointTrajectory jt;
+  jt.joint_names = joint_names;
+  for (int i = 0; i < joint_locs.size(); i++) {
+    trajectory_msgs::JointTrajectoryPoint point;
+    point.positions = joint_locs[i];
+    jt.points.push_back(point);
+  }
+  res.joint_trajectory = jt;
+  return true;
+}
+
+std::vector<std::vector<double>> MoveToPoseService::plan_path(std::vector<double> joint_positions, geometry_msgs::Pose target_pose)
+{
+  bool at_goal = false;
+  std::vector<std::vector<double>> points;
+  while (!at_goal)
   {
     //std::cout << "running tracking!" << std::endl;
     try
     {
-      std_msgs::Float64 msg;
-      if(is_active)
-      {
-        msg.data = controller.make_step_to_target_pose(target_pose);
-      }
-      else
-      {
-        //if we aren't moving, then we will never arrive
-        msg.data = 1.0;
-      }
-      dist_pub_.publish(msg); 
+      JointUpdateResult jur = controller_.plan_step_to_target_pose(joint_positions, target_pose);
+      joint_positions = jur.joint_positions;
+      points.push_back(joint_positions);
+      at_goal = jur.at_target;
     }
     catch(...)
     {
       std::cout << "You hit an error!";
       throw;
     }
-    loop_rate.sleep();
   }
-}
-
-// this method updates the target for the service to move the robot to
-bool TrackPoseService::handle_target_update(feedbot_trajectory_logic::TrackPose::Request &req,
-                          feedbot_trajectory_logic::TrackPose::Response &res)
-{
-  if(req.stopMotion)
-  {
-    is_active = false;
-  }
-  else
-  {
-    geometry_msgs::Pose target_copy(req.target);
-    target_pose = target_copy;
-    is_active = true;
-  }
-  res.success = true;
+  return points;
 }
 
 int main(int argc, char **argv)
@@ -61,12 +50,11 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "track_pose_server");
   ros::NodeHandle n;
   bool is_simulation, is_simulate_spoon;
-  double update_rate_hz, step_size_meters;
+  double step_size_meters;
   std::string robot_type, link_prefix;
   // how frequently do we send a (possibly new) target to the jacobian_controller
   // (which itself has a timer for how frequently to send commands to domus)
   // don't forget to set a default value for these, in case you start from the command line! :)
-  ros::param::param<double>("~update_rate_hz", update_rate_hz, 10);
   ros::param::param<double>("~step_size_meters", step_size_meters, 0.01);
   ros::param::param<std::string>("~robot_type", robot_type, "niryo");
   ros::param::param<std::string>("~link_prefix", link_prefix, "");
@@ -96,17 +84,14 @@ int main(int argc, char **argv)
     std::cout << "Simulating code without connecting to any robot";
     robot_interface = new JointEchoingInterface(&n, robot_params);
   }
-  ros::AsyncSpinner spinner(1); // use 1 thread async for callbacks
-  spinner.start();
   std::cout << "Waiting 5 sec for DomusInterface in case it's slow to come up";
   ros::Duration(5).sleep();
   std::cout << "Done waiting 5 sec for DomusInterface in case it's slow to come up";
-  TrackPoseService trackPoseService(update_rate_hz, step_size_meters, robot_interface, &n, link_prefix);
+  MoveToPoseService trackPoseService(step_size_meters, robot_interface, &n, link_prefix);
   std::cout << "Waiting for trackPoseService in case it's slow to come up" << std::endl;
   ros::Duration(5).sleep();
-  ros::ServiceServer service = n.advertiseService("update_pose_target", &TrackPoseService::handle_target_update, &trackPoseService);
-  trackPoseService.run_tracking();
-
+  ros::ServiceServer service = n.advertiseService("move_to_pose", &MoveToPoseService::move_to_pose, &trackPoseService);
+  ros::spin();
   delete robot_interface;
   return 0;
 }

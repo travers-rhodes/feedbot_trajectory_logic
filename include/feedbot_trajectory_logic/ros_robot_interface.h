@@ -16,11 +16,14 @@
 class RosRobotInterface : public RobotInterface
 {
   public:
-    RosRobotInterface(std::string follow_joint_trajectory_name, CustomRobotParams robot_params);
+    RosRobotInterface(std::string follow_joint_trajectory_name, std::string joint_state_name, ros::NodeHandle* nh, CustomRobotParams robot_params);
     virtual void InitializeConnection();
     virtual bool SendTargetAngles(const std::vector<double> &joint_angles, float secs);
+    virtual void GetCurrentAngles(std::vector<double> &joint_angles, std::vector<std::string> &joint_names);
   private:
+    ros::NodeHandle* nh_;
     std::shared_ptr<actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>> ac_;
     std::string follow_joint_trajectory_name_;
+    std::string joint_state_name_;
 };
 #endif

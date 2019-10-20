@@ -19,3 +19,8 @@ bool
 RobotInterface::SendTargetAngles(const std::vector<double> &joint_angles, float secs)
 {
 }
+
+void
+RobotInterface::GetCurrentAngles(std::vector<double> &joint_angles, std::vector<std::string> &joint_names)
+{
+}
