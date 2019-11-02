@@ -21,6 +21,7 @@ JacobianController::JacobianController(double trans_step_size_meters,  RobotInte
   link_prefix_ = link_prefix;
   kinematic_model_ = robot_model_loader_.getModel();
   robot_interface_ = robot_interface;
+  std::cout << "About to initialize connection \n";
   robot_interface_->InitializeConnection();
 
   kinematic_state_ = robot_state::RobotStatePtr(new robot_state::RobotState(kinematic_model_));

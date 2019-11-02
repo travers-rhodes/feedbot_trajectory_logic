@@ -76,7 +76,7 @@ int main(int argc, char **argv)
   } else if (robot_type == "gen3_rviz") { 
     std::cout << "Echoing joints on rviz gen3 robot";
     Gen3RobotParams gen3_robot_params;
-    robot_interface = new JointEchoingInterface(&n, gen3_robot_params);
+    robot_interface = new RosRobotInterface("/follow_joint_trajectory", "/joint_states", &n, gen3_robot_params);
   } else if (robot_type == "custom_domus") {
     ROS_ERROR_STREAM("Disabled code for custom Domus robot");
     //robot_interface = new CustomDomusInterface(&n, robot_params);
