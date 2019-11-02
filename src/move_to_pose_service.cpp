@@ -16,9 +16,12 @@ bool MoveToPoseService::move_to_pose(feedbot_trajectory_logic::MoveToPose::Reque
   for (int i = 0; i < joint_locs.size(); i++) {
     trajectory_msgs::JointTrajectoryPoint point;
     point.positions = joint_locs[i];
+    ros::Duration cur_time(i);
+    point.time_from_start = cur_time;
     jt.points.push_back(point);
   }
   res.joint_trajectory = jt;
+  robot_interface_->SendTrajectory(jt);
   return true;
 }
 

@@ -15,6 +15,11 @@ RobotInterface::InitializeConnection()
 {
 }
 
+void
+RobotInterface::SendTrajectory(const trajectory_msgs::JointTrajectory &joint_trajectory)
+{
+}
+
 bool
 RobotInterface::SendTargetAngles(const std::vector<double> &joint_angles, float secs)
 {

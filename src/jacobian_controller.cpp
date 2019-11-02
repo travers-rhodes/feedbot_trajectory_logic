@@ -40,11 +40,7 @@ JacobianController::JacobianController(double trans_step_size_meters,  RobotInte
 
   //std::cout << "Waiting to give time for connection to Arduino to be established" << std::endl;
   //ros::Duration(2).sleep();
-  std::cout << "Moving to default position" << std::endl;
-  robot_interface->SendTargetAngles(robot_interface_->initial_joint_values_, 3);
-  kinematic_state_->setJointGroupPositions(joint_model_group_, robot_interface->initial_joint_values_);  
-  current_pose_ = kinematic_state_->getGlobalLinkTransform(link_prefix_ + robot_interface_->end_effector_link_);
-  
+  std::cout << "Don't move to default position" << std::endl;
   std::cout << "Sleeping for 2 seconds to get to initial position";
   ros::Duration(2).sleep();
 }

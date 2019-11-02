@@ -20,6 +20,7 @@ class RosRobotInterface : public RobotInterface
     virtual void InitializeConnection();
     virtual bool SendTargetAngles(const std::vector<double> &joint_angles, float secs);
     virtual void GetCurrentAngles(std::vector<double> &joint_angles, std::vector<std::string> &joint_names);
+    virtual void SendTrajectory(const trajectory_msgs::JointTrajectory &joint_trajectory);
   private:
     ros::NodeHandle* nh_;
     std::shared_ptr<actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>> ac_;
