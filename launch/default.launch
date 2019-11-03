@@ -17,8 +17,9 @@
     <param name="robot_type" type="string" value="gen3_rviz"/>
   </node>
 
+  <!--
   <node name="move_poses" pkg="feedbot_trajectory_logic" type="move_poses.py" unless="$(arg calibrate_only)"> 
-  </node>
+  </node> -->
 
   <node name="fake_follow_joint_trajectory" pkg="feedbot_trajectory_logic" type="fake_follow_joint_trajectory.py" output="screen"/> 
   <!-- We do not have a robot connected, so publish fake joint states -->

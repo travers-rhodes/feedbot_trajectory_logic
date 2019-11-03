@@ -14,6 +14,11 @@ bool MoveToPoseService::move_to_pose(feedbot_trajectory_logic::MoveToPose::Reque
   bool at_goal = false;
   trajectory_msgs::JointTrajectory jt;
   float cumulative_time_secs(0);
+  trajectory_msgs::JointTrajectoryPoint start_point;
+  start_point.positions = joint_positions; 
+  ros::Duration start_time(cumulative_time_secs);
+  start_point.time_from_start = start_time;
+  jt.points.push_back(start_point);
   while (!at_goal)
   {
     //std::cout << "running tracking!" << std::endl;
@@ -24,7 +29,7 @@ bool MoveToPoseService::move_to_pose(feedbot_trajectory_logic::MoveToPose::Reque
       trajectory_msgs::JointTrajectoryPoint point;
       point.positions = jur.joint_positions; 
       cumulative_time_secs += jur.step_time;
-      ros::Duration cur_time(cumulative_time_secs);
+      ros::Duration cur_time(cumulative_time_secs/10);
       point.time_from_start = cur_time;
       jt.points.push_back(point);
       at_goal = jur.at_target;
