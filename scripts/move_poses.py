@@ -12,7 +12,7 @@ class MovePoses:
     self.defaultQuat = Quaternion(0.5, 0.5, 0.5, 0.5)
     rospy.logwarn("waiting for move_to_pose")
     rospy.wait_for_service("move_to_pose")
-    rospy.logwarn("continuing")
+    rospy.logwarn("continuing after finding move_to_pose service")
     self.move_ = rospy.ServiceProxy("move_to_pose", MoveToPose)
     self.move_to_target([0.3 + 0.3,0.05,0.17])
 

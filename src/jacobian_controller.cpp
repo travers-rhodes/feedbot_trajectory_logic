@@ -83,7 +83,7 @@ JacobianController::plan_step_to_target_pose(std::vector<double> joint_angles, c
       quat_dist < QUAT_EPSILON)
   {
     // No need to move. Return 0 to say we are at the target.
-    return JointUpdateResult(current_joint_values, current_pose_, quat_dist, trans_dist, true);
+    return JointUpdateResult(current_joint_values, current_pose_, quat_dist, trans_dist, true, 0);
   }
  
   // Compute the translation and rotation change we need 
@@ -153,6 +153,7 @@ JacobianController::plan_step_to_target_pose(std::vector<double> joint_angles, c
 
   // TSR: PLAN_BRANCH: for this branch of code, we don't actually move the robot
   // we just plan out where we _would_ move the robot.
+  // but, we do need to return the timing information.
   //bool successful_move = robot_interface_->SendTargetAngles(new_joint_values, std::max(MIN_TIME_TO_REACH_NEW, trans_dist / TRANS_SPEED));
   bool successful_move = true;
 
@@ -161,7 +162,7 @@ JacobianController::plan_step_to_target_pose(std::vector<double> joint_angles, c
     kinematic_state_->setJointGroupPositions(joint_model_group_, new_joint_values);  
     current_pose_ = kinematic_state_->getGlobalLinkTransform(link_prefix_ + robot_interface_->end_effector_link_);
   }
-  return JointUpdateResult(new_joint_values, current_pose_, quat_dist, trans_dist, false);
+  return JointUpdateResult(new_joint_values, current_pose_, quat_dist, trans_dist, false, std::max(MIN_TIME_TO_REACH_NEW, trans_dist / TRANS_SPEED));
 }
 
 // scale down the step by step_scale amount

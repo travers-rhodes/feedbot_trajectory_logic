@@ -24,7 +24,6 @@ class FakeFollowJointTrajectoryAction:
 
   def execute_cb(self, msg):
     rospy.logwarn("Calling Execute Callback for fake followjointtrajectory")
-    import pdb; pdb.set_trace()
     goal = moveitETG()
     moveit_robot_trajectory = RobotTrajectory();
     moveit_robot_trajectory.joint_trajectory = msg.trajectory

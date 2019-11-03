@@ -18,12 +18,13 @@
 class JointUpdateResult
 {
   public:
-    JointUpdateResult(std::vector<double> jp, Eigen::Affine3d eefp, double qd, double td, bool at) {
+    JointUpdateResult(std::vector<double> jp, Eigen::Affine3d eefp, double qd, double td, bool at, double st) {
       joint_positions = jp;
       eef_pose = eefp;
       quat_dist = qd;
       trans_dist = td;
       at_target = at;
+      step_time = st; 
     }
     JointUpdateResult(const JointUpdateResult& jur) {
       joint_positions = jur.joint_positions;
@@ -37,6 +38,7 @@ class JointUpdateResult
     double quat_dist;
     double trans_dist;
     bool at_target;
+    double step_time;
 };
 
 class JacobianController

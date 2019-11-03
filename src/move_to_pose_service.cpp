@@ -10,33 +10,23 @@ bool MoveToPoseService::move_to_pose(feedbot_trajectory_logic::MoveToPose::Reque
   std::vector<double> joint_positions;
   std::vector<std::string> joint_names;
   robot_interface_->GetCurrentAngles(joint_positions, joint_names);
-  std::vector<std::vector<double>> joint_locs = plan_path(joint_positions, req.target);
-  trajectory_msgs::JointTrajectory jt;
-  jt.joint_names = joint_names;
-  for (int i = 0; i < joint_locs.size(); i++) {
-    trajectory_msgs::JointTrajectoryPoint point;
-    point.positions = joint_locs[i];
-    ros::Duration cur_time(i);
-    point.time_from_start = cur_time;
-    jt.points.push_back(point);
-  }
-  res.joint_trajectory = jt;
-  robot_interface_->SendTrajectory(jt);
-  return true;
-}
-
-std::vector<std::vector<double>> MoveToPoseService::plan_path(std::vector<double> joint_positions, geometry_msgs::Pose target_pose)
-{
+  
   bool at_goal = false;
-  std::vector<std::vector<double>> points;
+  trajectory_msgs::JointTrajectory jt;
+  float cumulative_time_secs(0);
   while (!at_goal)
   {
     //std::cout << "running tracking!" << std::endl;
     try
     {
-      JointUpdateResult jur = controller_.plan_step_to_target_pose(joint_positions, target_pose);
+      JointUpdateResult jur = controller_.plan_step_to_target_pose(joint_positions, req.target);
       joint_positions = jur.joint_positions;
-      points.push_back(joint_positions);
+      trajectory_msgs::JointTrajectoryPoint point;
+      point.positions = jur.joint_positions; 
+      cumulative_time_secs += jur.step_time;
+      ros::Duration cur_time(cumulative_time_secs);
+      point.time_from_start = cur_time;
+      jt.points.push_back(point);
       at_goal = jur.at_target;
     }
     catch(...)
@@ -45,7 +35,11 @@ std::vector<std::vector<double>> MoveToPoseService::plan_path(std::vector<double
       throw;
     }
   }
-  return points;
+  
+  jt.joint_names = joint_names;
+  res.joint_trajectory = jt;
+  robot_interface_->SendTrajectory(jt);
+  return true;
 }
 
 int main(int argc, char **argv)
@@ -55,9 +49,6 @@ int main(int argc, char **argv)
   bool is_simulation, is_simulate_spoon;
   double step_size_meters;
   std::string robot_type, link_prefix;
-  // how frequently do we send a (possibly new) target to the jacobian_controller
-  // (which itself has a timer for how frequently to send commands to domus)
-  // don't forget to set a default value for these, in case you start from the command line! :)
   ros::param::param<double>("~step_size_meters", step_size_meters, 0.01);
   ros::param::param<std::string>("~robot_type", robot_type, "niryo");
   ros::param::param<std::string>("~link_prefix", link_prefix, "");

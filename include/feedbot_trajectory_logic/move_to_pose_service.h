@@ -21,8 +21,6 @@ class MoveToPoseService
     MoveToPoseService(double step_size_meters, RobotInterface* robot_interface, ros::NodeHandle*, std::string link_prefix);
     bool move_to_pose(feedbot_trajectory_logic::MoveToPose::Request &req,
            feedbot_trajectory_logic::MoveToPose::Response &res);
-    std::vector<std::vector<double>> plan_path(std::vector<double> joint_positions,
-           geometry_msgs::Pose target_pose);
  
   private:
     JacobianController controller_;
