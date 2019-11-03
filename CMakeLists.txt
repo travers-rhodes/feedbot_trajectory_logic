@@ -70,6 +70,7 @@ add_service_files(
   FILES
   TrackPose.srv
   MoveToPose.srv
+  MoveToJointAngles.srv
   PlayTrajectory.srv
 )
 

@@ -1,0 +1,6 @@
+float64[] joint_positions
+float64 target_time
+---
+trajectory_msgs/JointTrajectory joint_trajectory
+
+

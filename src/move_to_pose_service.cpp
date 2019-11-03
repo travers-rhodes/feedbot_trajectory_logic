@@ -5,6 +5,33 @@ MoveToPoseService::MoveToPoseService(double step_size_meters, RobotInterface* ro
   robot_interface_ = robot_interface;
 }
 
+bool MoveToPoseService::move_to_joint_angles(feedbot_trajectory_logic::MoveToJointAngles::Request &req, feedbot_trajectory_logic::MoveToJointAngles::Response &res)
+{
+  std::vector<double> joint_positions;
+  std::vector<std::string> joint_names;
+  robot_interface_->GetCurrentAngles(joint_positions, joint_names);
+  
+  trajectory_msgs::JointTrajectory jt;
+  float cumulative_time_secs(0);
+  trajectory_msgs::JointTrajectoryPoint start_point;
+  start_point.positions = joint_positions; 
+  ros::Duration start_time(cumulative_time_secs);
+  start_point.time_from_start = start_time;
+  jt.points.push_back(start_point);
+
+  trajectory_msgs::JointTrajectoryPoint point;
+  point.positions = req.joint_positions; 
+  cumulative_time_secs += req.target_time;
+  ros::Duration cur_time(cumulative_time_secs);
+  point.time_from_start = cur_time;
+  jt.points.push_back(point);
+  
+  jt.joint_names = joint_names;
+  res.joint_trajectory = jt;
+  robot_interface_->SendTrajectory(jt);
+  return true;
+}
+
 bool MoveToPoseService::move_to_pose(feedbot_trajectory_logic::MoveToPose::Request &req, feedbot_trajectory_logic::MoveToPose::Response &res)
 {
   std::vector<double> joint_positions;
@@ -90,6 +117,7 @@ int main(int argc, char **argv)
   std::cout << "Waiting for trackPoseService in case it's slow to come up" << std::endl;
   ros::Duration(5).sleep();
   ros::ServiceServer service = n.advertiseService("move_to_pose", &MoveToPoseService::move_to_pose, &trackPoseService);
+  ros::ServiceServer angle_service = n.advertiseService("move_to_joint_angles", &MoveToPoseService::move_to_joint_angles, &trackPoseService);
   ros::spin();
   delete robot_interface;
   return 0;

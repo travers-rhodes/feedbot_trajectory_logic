@@ -3,7 +3,7 @@ import rospy
 
 import numpy as np
 from geometry_msgs.msg import Pose, Quaternion, Point
-from feedbot_trajectory_logic.srv import MoveToPose
+from feedbot_trajectory_logic.srv import MoveToPose, MoveToJointAngles
 from tf.transformations import quaternion_from_euler, quaternion_multiply
 
 
@@ -14,8 +14,12 @@ class MovePoses:
     self.defaultQuat = np.array([0.5, 0.5, 0.5, 0.5])
     rospy.logwarn("waiting for move_to_pose")
     rospy.wait_for_service("move_to_pose")
-    rospy.logwarn("continuing after finding move_to_pose service")
     self.move_ = rospy.ServiceProxy("move_to_pose", MoveToPose)
+    rospy.logwarn("continuing after finding move_to_pose service")
+    rospy.logwarn("waiting for move_to_joint_angles")
+    rospy.wait_for_service("move_to_joint_angles")
+    self.move_to_angles_ = rospy.ServiceProxy("move_to_joint_angles", MoveToJointAngles)
+    rospy.logwarn("continuing after finding move_to_joint_angles")
    
     self.move_to_home() 
 
@@ -24,16 +28,9 @@ class MovePoses:
       self.move_to_target(target) 
 
   def move_to_home(self):
-    point = [0.4,0,0.4]
-    newpose = Pose()
-    point_msg = Point()
-    point_msg.x = point[0]
-    point_msg.y = point[1]
-    point_msg.z = point[2]
-    newpose.position = point_msg
-    newpose.orientation = quatMsg(self.defaultQuat)
-    res = self.move_(newpose)
-        
+    joint_angles = np.array([0, np.pi/4, 0, np.pi / 2.0, 0, - np.pi / 4, -np.pi/2])
+    time = 5.0
+    self.move_to_angles_(joint_angles, time) 
 
   def move_to_target(self, point):
     newpose = Pose()
