@@ -7,9 +7,6 @@ MoveToPoseService::MoveToPoseService(double step_size_meters, RobotInterface* ro
 
 bool MoveToPoseService::move_to_joint_angles(feedbot_trajectory_logic::MoveToJointAngles::Request &req, feedbot_trajectory_logic::MoveToJointAngles::Response &res)
 {
-  double speedup_factor;
-  ros::param::param<double>("~speedup_factor", speedup_factor, 1.0); 
-
   std::vector<double> joint_positions;
   std::vector<std::string> joint_names;
   robot_interface_->GetCurrentAngles(joint_positions, joint_names);
@@ -25,7 +22,7 @@ bool MoveToPoseService::move_to_joint_angles(feedbot_trajectory_logic::MoveToJoi
   trajectory_msgs::JointTrajectoryPoint point;
   point.positions = req.joint_positions; 
   cumulative_time_secs += req.target_time;
-  ros::Duration cur_time(cumulative_time_secs/speedup_factor);
+  ros::Duration cur_time(cumulative_time_secs);
   point.time_from_start = cur_time;
   jt.points.push_back(point);
   
@@ -37,8 +34,6 @@ bool MoveToPoseService::move_to_joint_angles(feedbot_trajectory_logic::MoveToJoi
 
 bool MoveToPoseService::move_to_pose(feedbot_trajectory_logic::MoveToPose::Request &req, feedbot_trajectory_logic::MoveToPose::Response &res)
 {
-  double speedup_factor;
-  ros::param::param<double>("~speedup_factor", speedup_factor, 1.0); 
   std::vector<double> joint_positions;
   std::vector<std::string> joint_names;
   robot_interface_->GetCurrentAngles(joint_positions, joint_names);
@@ -61,7 +56,7 @@ bool MoveToPoseService::move_to_pose(feedbot_trajectory_logic::MoveToPose::Reque
       trajectory_msgs::JointTrajectoryPoint point;
       point.positions = jur.joint_positions; 
       cumulative_time_secs += jur.step_time;
-      ros::Duration cur_time(cumulative_time_secs/speedup_factor);
+      ros::Duration cur_time(cumulative_time_secs);
       point.time_from_start = cur_time;
       jt.points.push_back(point);
       at_goal = jur.at_target;
@@ -104,11 +99,11 @@ int main(int argc, char **argv)
   } else if (robot_type == "gen3") { 
     std::cout << "Running code on a gen3 robot";
     Gen3RobotParams gen3_robot_params;
-    robot_interface = new RosRobotInterface("/my_gen3/gen3_joint_trajectory_controller/follow_joint_trajectory", "my_gen3/joint_states", &n, gen3_robot_params);
+    robot_interface = new RosRobotInterface("/my_gen3/gen3_joint_trajectory_controller/follow_joint_trajectory", "my_gen3/joint_states", &n, gen3_robot_params, robot_description_param_name);
   } else if (robot_type == "gen3_rviz") { 
     std::cout << "Echoing joints on rviz gen3 robot";
     Gen3RobotParams gen3_robot_params;
-    robot_interface = new RosRobotInterface("/follow_joint_trajectory", "/joint_states", &n, gen3_robot_params);
+    robot_interface = new RosRobotInterface("/follow_joint_trajectory", "/joint_states", &n, gen3_robot_params, robot_description_param_name);
   } else if (robot_type == "custom_domus") {
     ROS_ERROR_STREAM("Disabled code for custom Domus robot");
     //robot_interface = new CustomDomusInterface(&n, robot_params);

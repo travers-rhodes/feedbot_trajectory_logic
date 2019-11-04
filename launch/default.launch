@@ -12,6 +12,8 @@
     <param name="step_size_meters" type="double" value="0.01"/>
     <param name="robot_type" type="string" value="$(arg robot_type)"/>
     <param name="robot_description_param_name" type="string" value="/my_$(arg robot_type)/robot_description" unless="$(arg sim)"/>
+    <!-- values less than 1 slow down motions -->
+    <param name="speedup_factor" value="0.3"/>
   </node>
 
 
