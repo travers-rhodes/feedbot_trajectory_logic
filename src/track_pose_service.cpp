@@ -1,6 +1,6 @@
 #include <feedbot_trajectory_logic/track_pose_service.h>
 
-TrackPoseService::TrackPoseService(double update_rate_hz, double step_size_meters, RobotInterface* robot_interface, ros::NodeHandle* n, std::string link_prefix) : controller(step_size_meters, robot_interface, n, link_prefix), _update_rate_hz(update_rate_hz)
+TrackPoseService::TrackPoseService(double update_rate_hz, double step_size_meters, RobotInterface* robot_interface, ros::NodeHandle* n, std::string link_prefix) : controller(step_size_meters, robot_interface, n, link_prefix, "robot_description"), _update_rate_hz(update_rate_hz)
 {
   dist_pub_ = n->advertise<std_msgs::Float64>("distance_to_target", 1);
 

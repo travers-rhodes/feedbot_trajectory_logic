@@ -19,7 +19,7 @@
 class MoveToPoseService 
 {
   public:
-    MoveToPoseService(double step_size_meters, RobotInterface* robot_interface, ros::NodeHandle*, std::string link_prefix);
+    MoveToPoseService(double step_size_meters, RobotInterface* robot_interface, ros::NodeHandle*, std::string link_prefix, std::string robot_description_param_name);
     bool move_to_pose(feedbot_trajectory_logic::MoveToPose::Request &req,
            feedbot_trajectory_logic::MoveToPose::Response &res);
     bool move_to_joint_angles(feedbot_trajectory_logic::MoveToJointAngles::Request &req,

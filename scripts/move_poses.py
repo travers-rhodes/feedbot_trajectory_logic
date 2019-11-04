@@ -29,7 +29,7 @@ class MovePoses:
 
   def move_to_home(self):
     joint_angles = np.array([0, np.pi/4, 0, np.pi / 2.0, 0, - np.pi / 4, -np.pi/2])
-    time = 5.0
+    time = 10.0
     self.move_to_angles_(joint_angles, time) 
 
   def move_to_target(self, point):

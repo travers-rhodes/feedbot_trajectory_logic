@@ -44,7 +44,7 @@ class JointUpdateResult
 class JacobianController
 {
   public:
-    JacobianController(double trans_step_size_meters, RobotInterface* robot_interface, ros::NodeHandle* n, std::string robot_description_param_name);
+    JacobianController(double trans_step_size_meters, RobotInterface* robot_interface, ros::NodeHandle* n, std::string link_prefix, std::string robot_description_param_name);
     JointUpdateResult plan_step_to_target_pose(const std::vector<double> joint_angles, const geometry_msgs::Pose &target_pose);
     double make_step_to_target_pose(const geometry_msgs::Pose &target_pose);
 

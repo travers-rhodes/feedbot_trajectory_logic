@@ -1,39 +1,43 @@
 <launch>
-  <arg name="simulate_spoon" default="true"/>
-  <arg name="follow_mouth" default="false"/>
-  <arg name="calibrate_only" default="false"/>
-  <arg name="just_follow_mouth" default="false"/>
-
-  <include file="$(find gen3_robotiq_2f_85_move_it_config)/launch/planning_context.launch">
-    <arg name="load_robot_description" value="true"/>
-  </include> 
-  <node pkg="robot_state_publisher" type="robot_state_publisher" name="rob_st_pub"/>
+  <arg name="sim" default="true"/>
+  
+  <arg name="robot_type" default="$(eval 'gen3_rviz' if arg('sim') else 'gen3')"/>
+  
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find feedbot_trajectory_logic)/config/kinova_default.rviz" /> 
 
   <node name="move_to_pose_service" pkg="feedbot_trajectory_logic" type="move_to_pose_service" respawn="false" output="screen">
     <!--launch-prefix="/home/travers/run_tmux.sh">-->
     <rosparam command="load"
               file="$(find gen3_robotiq_2f_85_move_it_config)/config/kinematics.yaml"/>
     <param name="step_size_meters" type="double" value="0.01"/>
-    <param name="robot_type" type="string" value="gen3_rviz"/>
+    <param name="robot_type" type="string" value="$(arg robot_type)"/>
+    <param name="robot_description_param_name" type="string" value="/my_$(arg robot_type)/robot_description" unless="$(arg sim)"/>
   </node>
 
-  <!--
-  <node name="move_poses" pkg="feedbot_trajectory_logic" type="move_poses.py" unless="$(arg calibrate_only)"> 
-  </node> -->
 
-  <node name="fake_follow_joint_trajectory" pkg="feedbot_trajectory_logic" type="fake_follow_joint_trajectory.py" output="screen"/> 
-  <!-- We do not have a robot connected, so publish fake joint states -->
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
-    <param name="use_gui" value="false"/>
-    <rosparam param="source_list">[move_group/fake_controller_joint_states]</rosparam>
-  </node>
+  <group if="$(arg sim)">
+    <node name="fake_follow_joint_trajectory" pkg="feedbot_trajectory_logic" type="fake_follow_joint_trajectory.py" output="screen"/> 
+    <!-- Load universal robot description format (URDF) -->
+    <param name="robot_description" command="xacro arm:=gen3 gripper:=robotiq_2f_85 '$(find kortex_description)/robots/gen3_robotiq_2f_85.xacro'"/>
+    <include file="$(find gen3_robotiq_2f_85_move_it_config)/launch/move_group.launch">
+      <arg name="allow_trajectory_execution" value="true"/>
+      <arg name="fake_execution" value="true"/>
+      <arg name="info" value="true"/>
+    </include>
+    <!-- We do not have a robot connected, so publish fake joint states -->
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+      <param name="use_gui" value="false"/>
+      <rosparam param="source_list">[move_group/fake_controller_joint_states]</rosparam>
+    </node>
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="rob_st_pub"/>
+  </group>
   
-  <!-- Run the main MoveIt! executable without trajectory execution (we do not have controllers configured by default) -->
-  <include file="$(find gen3_robotiq_2f_85_move_it_config)/launch/move_group.launch">
-    <arg name="allow_trajectory_execution" value="true"/>
-    <arg name="fake_execution" value="true"/>
-    <arg name="info" value="true"/>
-  </include>
-
+  <group unless="$(arg sim)">
+    <include file="$(find kortex_driver)/launch/kortex_driver.launch">
+      <arg name="start_rviz" value="false"/>
+      <arg name="start_moveit" value="true"/>
+      <arg name="gripper" value="robotiq_2f_85"/>
+    </include>
+  </group>
 
 </launch>

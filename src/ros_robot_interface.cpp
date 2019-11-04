@@ -26,8 +26,8 @@ RosRobotInterface::GetCurrentAngles(std::vector<double> &joint_angles, std::vect
   if (js == NULL) {
     throw;
   }
-  joint_angles = js->position;
-  joint_names = js->name;
+  std::copy(js->position.begin(), js->position.begin() + joint_names_.size(), std::back_inserter(joint_angles));
+  joint_names = joint_names_;
 }
 
 
@@ -53,6 +53,14 @@ RosRobotInterface::SendTrajectory(const trajectory_msgs::JointTrajectory &joint_
   goal.path_tolerance = tols;
   ac_->sendGoal(goal);
   ac_->waitForResult();
+  boost::shared_ptr<const control_msgs::FollowJointTrajectoryResult> result = ac_->getResult();
+  int error_code = result->error_code;
+  ROS_INFO_STREAM("The error code from calling the follow joint trajectory action was " << error_code << ".");
+  if (error_code)
+  {
+    ROS_ERROR_STREAM("The error code from calling the follow joint trajectory action was nonzero.");
+    throw; 
+  }
 } 
 
 // move to the target joint_angles and the motion should take you secs seconds.
