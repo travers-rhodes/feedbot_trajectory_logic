@@ -18,7 +18,7 @@ RosRobotInterface::RosRobotInterface(std::string follow_joint_trajectory_name, s
 void
 RosRobotInterface::InitializeConnection()
 {
-  ac_ = std::make_shared<actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>>(follow_joint_trajectory_name_, true);
+  ac_ = std::make_shared<actionlib::SimpleActionClient<moveit_msgs::ExecuteTrajectoryAction>>(follow_joint_trajectory_name_, true);
   ac_->waitForServer();
 }
   
@@ -34,11 +34,90 @@ RosRobotInterface::GetCurrentAngles(std::vector<double> &joint_angles, std::vect
   joint_names = joint_names_;
 }
 
+trajectory_msgs::JointTrajectory
+interpolate_trajectory(const trajectory_msgs::JointTrajectory& joint_trajectory, double speedup_factor, double subsampling_freq = 1.0, bool pos_only = false)
+{
+  double t_delta = 0.01;
+  double epsilon = 0.00001;
+
+  int num_waypoints = joint_trajectory.points.size();
+  double total_duration = joint_trajectory.points[num_waypoints-1].time_from_start.toSec();
+
+  trajectory_msgs::JointTrajectory hyper_joint_trajectory;
+  std::vector<trajectory_msgs::JointTrajectoryPoint> hyper_points;
+  int past_index = 0;
+  int fut_index = 1;
+  int max_index = num_waypoints - 1;
+  std::vector<double> past_positions = joint_trajectory.points[past_index].positions;
+  std::vector<double> fut_positions = joint_trajectory.points[fut_index].positions;
+  std::vector<double> past_vel, fut_vel, past_acc, fut_acc;
+  if (!pos_only)
+  {
+    past_vel = joint_trajectory.points[past_index].velocities;
+    fut_vel = joint_trajectory.points[fut_index].velocities;
+    past_acc = joint_trajectory.points[past_index].accelerations;
+    fut_acc = joint_trajectory.points[fut_index].accelerations;
+  }
+  double past_time = joint_trajectory.points[past_index].time_from_start.toSec();
+  double fut_time = joint_trajectory.points[fut_index].time_from_start.toSec();
+  // hypersample to get approximate time-stemps, then re-compute time-stamps
+  // and then subsample to get our desired interpolation result
+  for (double dur = 0; (dur * speedup_factor) < total_duration; dur += t_delta / subsampling_freq)
+  {
+    while ((dur * speedup_factor) > fut_time && past_index < max_index)
+    {
+      past_index++;
+      fut_index = std::min(past_index + 1, max_index);
+      past_positions = joint_trajectory.points[past_index].positions;
+      fut_positions = joint_trajectory.points[fut_index].positions;
+      if (!pos_only)
+      {
+        past_vel = joint_trajectory.points[past_index].velocities;
+        fut_vel = joint_trajectory.points[fut_index].velocities;
+        past_acc = joint_trajectory.points[past_index].accelerations;
+        fut_acc = joint_trajectory.points[fut_index].accelerations;
+      }
+      past_time = joint_trajectory.points[past_index].time_from_start.toSec();
+      fut_time = joint_trajectory.points[fut_index].time_from_start.toSec();
+    }
+    double t = 0; 
+    if ((fut_time - past_time) > epsilon)
+    {
+      t = ((dur * speedup_factor) - past_time) / (fut_time - past_time);
+    }
+
+    trajectory_msgs::JointTrajectoryPoint point;
+    for (int j = 0; j < joint_trajectory.joint_names.size(); j++)
+    {
+      point.positions.push_back(past_positions[j] + t * (fut_positions[j] - past_positions[j]));
+      if (!pos_only)
+      {
+        point.velocities.push_back(past_vel[j] + t * (fut_vel[j] - past_vel[j]));
+        point.accelerations.push_back(past_acc[j] + t * (fut_acc[j] - past_acc[j]));
+      }
+    }
+    
+    ros::Duration tfs(dur);
+    point.time_from_start = tfs;
+    hyper_points.push_back(point);
+  }
+  
+  // now, finally, fill out the structure
+  hyper_joint_trajectory.joint_names = joint_trajectory.joint_names;
+  hyper_joint_trajectory.points = hyper_points;
+
+  return(hyper_joint_trajectory);
+}
+
 
 // send the robot on a whole biglong path 
 void
 RosRobotInterface::SendTrajectory(const trajectory_msgs::JointTrajectory &raw_joint_trajectory)
 {
+  if (raw_joint_trajectory.points.size() < 2)
+  {
+    ROS_ERROR_STREAM("You need at least two points in your trajectory to have a vaiid trajectory");
+  }
   // need to set velocity/acceleration points for kinova robot :(
   trajectory_processing::IterativeParabolicTimeParameterization tp;
   robot_trajectory::RobotTrajectory robot_traj(kinematic_model_, srdf_group_name_);
@@ -49,50 +128,57 @@ RosRobotInterface::SendTrajectory(const trajectory_msgs::JointTrajectory &raw_jo
   kinematic_state_->setJointGroupPositions(srdf_group_name_, joint_angles);  
 
   robot_traj.setRobotTrajectoryMsg(*kinematic_state_, raw_joint_trajectory);
-   
   ROS_INFO_STREAM("First timestamp after 0 is " << raw_joint_trajectory.points[1].time_from_start << ".");
   tp.computeTimeStamps(robot_traj);
-
   moveit_msgs::RobotTrajectory robot_traj_msg;
   robot_traj.getRobotTrajectoryMsg(robot_traj_msg);
-  trajectory_msgs::JointTrajectory joint_trajectory = robot_traj_msg.joint_trajectory;
-  ROS_INFO_STREAM("New timestamp after 0 is " << joint_trajectory.points[1].time_from_start << ".");
   
+  // comment taken from robotiq_2f_85_move_it_config/launch/ompl_planning_pipeline.launch.xml
+  // <!-- PreComputedJointTrajectory Action Server needs 1msec timesteps between waypoints  -->
+  
+  // FIRST, we hypersample (including adjusting according to speedup_factor)
   double speedup_factor;
   ros::param::param<double>("~speedup_factor", speedup_factor, 1.0); 
+  ROS_INFO_STREAM("the speedup factor is " << speedup_factor<< ".");
+  
+  bool pos_only = true;
+  trajectory_msgs::JointTrajectory hyper_joint_trajectory = interpolate_trajectory(robot_traj_msg.joint_trajectory, speedup_factor, 1.0, pos_only);
+  robot_traj.setRobotTrajectoryMsg(*kinematic_state_, hyper_joint_trajectory);
+  ROS_INFO_STREAM("First timestamp after 0 is " << hyper_joint_trajectory.points[1].time_from_start << ".");
 
-  for (int i = 0; i < joint_trajectory.points.size(); i++)
-  {
-    // https://answers.ros.org/question/205487/get-mean-of-two-rostime-stamps/
-    // "weird that multiplication is implimented for ros::duration, but not division
-    joint_trajectory.points[i].time_from_start = joint_trajectory.points[i].time_from_start * (1.0/ speedup_factor);
-  }
+  // THEN, we re-time
+  tp.computeTimeStamps(robot_traj);
+  robot_traj.getRobotTrajectoryMsg(robot_traj_msg);
+  ROS_INFO_STREAM("First timestamp after 0 is " << robot_traj_msg.joint_trajectory.points[1].time_from_start << ".");
+ 
+   
+  // FINALLY, we subsample at the desired times (note no need to speedup_factor again)
+  pos_only = false;
+  trajectory_msgs::JointTrajectory final_joint_trajectory = interpolate_trajectory(robot_traj_msg.joint_trajectory, 1.0, 1.0, pos_only);
+  ROS_INFO_STREAM("First timestamp after 0 is " << final_joint_trajectory.points[1].time_from_start << ".");
+
+
+  ROS_INFO_STREAM("we added all the points. there are " << final_joint_trajectory.points.size()<< " points.");
+  
+  robot_traj.setRobotTrajectoryMsg(*kinematic_state_, final_joint_trajectory);
+  robot_traj.getRobotTrajectoryMsg(robot_traj_msg);
+  ROS_INFO_STREAM("timestamp after 0 is still" << robot_traj_msg.joint_trajectory.points[1].time_from_start << ".");
+  
 
   // I should use a mutex (apparently i should use a unique_lock, but i haven't looked into why...) to ensure only
   // one command sent at a time 
   
-  std::vector<control_msgs::JointTolerance> tols;
-  for (int i = 0; i < joint_names_.size(); i++) {
-    control_msgs::JointTolerance tol;
-    tol.name = joint_names_[i];
-    tol.position = 5;
-    tol.velocity = 5;
-    tol.acceleration = 5;
-    tols.push_back(tol);
-  }
-  
-  control_msgs::FollowJointTrajectoryGoal goal;
-  goal.trajectory = joint_trajectory;
-  goal.path_tolerance = tols;
+  moveit_msgs::ExecuteTrajectoryGoal goal;
+  goal.trajectory = robot_traj_msg;
   ac_->sendGoal(goal);
   ac_->waitForResult();
-  boost::shared_ptr<const control_msgs::FollowJointTrajectoryResult> result = ac_->getResult();
-  int error_code = result->error_code;
+  boost::shared_ptr<const moveit_msgs::ExecuteTrajectoryResult> result = ac_->getResult();
+  int error_code = result->error_code.val;
 
   ROS_INFO_STREAM("The error code from calling the follow joint trajectory action was " << error_code << ".");
-  if (error_code)
+  if (error_code != moveit_msgs::MoveItErrorCodes::SUCCESS)
   {
-    ROS_ERROR_STREAM("The error code from calling the follow joint trajectory action was nonzero.");
+    ROS_ERROR_STREAM("The error code from calling the follow joint trajectory action was not SUCCESS.");
     throw; 
   }
 } 

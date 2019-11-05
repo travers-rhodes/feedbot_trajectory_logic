@@ -18,7 +18,6 @@
 
 
   <group if="$(arg sim)">
-    <node name="fake_follow_joint_trajectory" pkg="feedbot_trajectory_logic" type="fake_follow_joint_trajectory.py" output="screen"/> 
     <!-- Load universal robot description format (URDF) -->
     <param name="robot_description" command="xacro arm:=gen3 gripper:=robotiq_2f_85 '$(find kortex_description)/robots/gen3_robotiq_2f_85.xacro'"/>
     <include file="$(find gen3_robotiq_2f_85_move_it_config)/launch/move_group.launch">
