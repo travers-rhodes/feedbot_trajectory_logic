@@ -23,7 +23,7 @@ class MovePoses:
    
     self.move_to_home() 
 
-    for theta in np.arange(0,4*np.pi, 0.1):
+    for theta in np.linspace(0,4*np.pi, 120):
       target = self.focal_point + np.array([0.1 * np.cos(theta), 0.1 * np.sin(theta), 0.2])
       self.move_to_target(target) 
 

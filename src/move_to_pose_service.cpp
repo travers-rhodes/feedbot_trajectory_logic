@@ -69,8 +69,7 @@ bool MoveToPoseService::move_to_pose(feedbot_trajectory_logic::MoveToPose::Reque
   }
   
   jt.joint_names = joint_names;
-  res.joint_trajectory = jt;
-  robot_interface_->SendTrajectory(jt);
+  res.joint_trajectory = robot_interface_->SendTrajectory(jt);
   return true;
 }
 

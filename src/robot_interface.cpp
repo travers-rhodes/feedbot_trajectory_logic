@@ -15,7 +15,7 @@ RobotInterface::InitializeConnection()
 {
 }
 
-void
+trajectory_msgs::JointTrajectory
 RobotInterface::SendTrajectory(const trajectory_msgs::JointTrajectory &joint_trajectory)
 {
 }

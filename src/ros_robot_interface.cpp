@@ -4,6 +4,7 @@
 //
 #include "feedbot_trajectory_logic/ros_robot_interface.h"
 #include <moveit/trajectory_processing/iterative_time_parameterization.h>
+#include <moveit/trajectory_processing/time_optimal_trajectory_generation.h>
 
 RosRobotInterface::RosRobotInterface(std::string follow_joint_trajectory_name, std::string joint_state_name, ros::NodeHandle* nh, CustomRobotParams robot_params, std::string robot_description_param_name) : RobotInterface(robot_params)
 {
@@ -111,7 +112,7 @@ interpolate_trajectory(const trajectory_msgs::JointTrajectory& joint_trajectory,
 
 
 // send the robot on a whole biglong path 
-void
+trajectory_msgs::JointTrajectory
 RosRobotInterface::SendTrajectory(const trajectory_msgs::JointTrajectory &raw_joint_trajectory)
 {
   if (raw_joint_trajectory.points.size() < 2)
@@ -119,7 +120,8 @@ RosRobotInterface::SendTrajectory(const trajectory_msgs::JointTrajectory &raw_jo
     ROS_ERROR_STREAM("You need at least two points in your trajectory to have a vaiid trajectory");
   }
   // need to set velocity/acceleration points for kinova robot :(
-  trajectory_processing::IterativeParabolicTimeParameterization tp;
+  //trajectory_processing::IterativeParabolicTimeParameterization tp;
+  trajectory_processing::TimeOptimalTrajectoryGeneration tp;
   robot_trajectory::RobotTrajectory robot_traj(kinematic_model_, srdf_group_name_);
   
   std::vector<double> joint_angles;
@@ -181,6 +183,7 @@ RosRobotInterface::SendTrajectory(const trajectory_msgs::JointTrajectory &raw_jo
     ROS_ERROR_STREAM("The error code from calling the follow joint trajectory action was not SUCCESS.");
     throw; 
   }
+  return(goal.trajectory.joint_trajectory);
 } 
 
 // move to the target joint_angles and the motion should take you secs seconds.
