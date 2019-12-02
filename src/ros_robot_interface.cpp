@@ -36,9 +36,8 @@ RosRobotInterface::GetCurrentAngles(std::vector<double> &joint_angles, std::vect
 }
 
 trajectory_msgs::JointTrajectory
-interpolate_trajectory(const trajectory_msgs::JointTrajectory& joint_trajectory, double speedup_factor, double subsampling_freq = 1.0, bool pos_only = false)
+interpolate_trajectory(const trajectory_msgs::JointTrajectory& joint_trajectory, double speedup_factor, double t_delta = 0.001, bool pos_only = false)
 {
-  double t_delta = 0.01;
   double epsilon = 0.00001;
 
   int num_waypoints = joint_trajectory.points.size();
@@ -63,7 +62,7 @@ interpolate_trajectory(const trajectory_msgs::JointTrajectory& joint_trajectory,
   double fut_time = joint_trajectory.points[fut_index].time_from_start.toSec();
   // hypersample to get approximate time-stemps, then re-compute time-stamps
   // and then subsample to get our desired interpolation result
-  for (double dur = 0; (dur * speedup_factor) < total_duration; dur += t_delta / subsampling_freq)
+  for (double dur = 0; (dur * speedup_factor) < total_duration; dur += t_delta)
   {
     while ((dur * speedup_factor) > fut_time && past_index < max_index)
     {
@@ -112,60 +111,86 @@ interpolate_trajectory(const trajectory_msgs::JointTrajectory& joint_trajectory,
 
 
 // send the robot on a whole biglong path 
+// can_speed_up parameter indicates whether it's OK for the robot (if it thinks it's safe) to perform the trajectory faster than the time parameterization given by the user
 trajectory_msgs::JointTrajectory
-RosRobotInterface::SendTrajectory(const trajectory_msgs::JointTrajectory &raw_joint_trajectory)
+RosRobotInterface::SendTrajectory(const trajectory_msgs::JointTrajectory &raw_joint_trajectory, bool can_speed_up)
 {
   if (raw_joint_trajectory.points.size() < 2)
   {
     ROS_ERROR_STREAM("You need at least two points in your trajectory to have a vaiid trajectory");
   }
+  double original_trajectory_duration = raw_joint_trajectory.points.back().time_from_start.toSec();
+  ROS_INFO_STREAM("Raw:");
+  ROS_INFO_STREAM("First timestamp after 0 is " << raw_joint_trajectory.points[1].time_from_start << ".");
+  ROS_INFO_STREAM("Last timestamp is " << raw_joint_trajectory.points.back().time_from_start << ".");
+
   // need to set velocity/acceleration points for kinova robot :(
   //trajectory_processing::IterativeParabolicTimeParameterization tp;
   trajectory_processing::TimeOptimalTrajectoryGeneration tp;
   robot_trajectory::RobotTrajectory robot_traj(kinematic_model_, srdf_group_name_);
-  
   std::vector<double> joint_angles;
   std::vector<std::string> joint_names;
   GetCurrentAngles(joint_angles, joint_names);
   kinematic_state_->setJointGroupPositions(srdf_group_name_, joint_angles);  
-
   robot_traj.setRobotTrajectoryMsg(*kinematic_state_, raw_joint_trajectory);
-  ROS_INFO_STREAM("First timestamp after 0 is " << raw_joint_trajectory.points[1].time_from_start << ".");
-  tp.computeTimeStamps(robot_traj);
+
+  if (can_speed_up)
+  {
+    // if we're allowed to speed up the trajectory, then we should retime first, since
+    // hypersampling can result in an artifical boundary on how sped-up the trajectory can go
+    tp.computeTimeStamps(robot_traj);
+  }
   moveit_msgs::RobotTrajectory robot_traj_msg;
   robot_traj.getRobotTrajectoryMsg(robot_traj_msg);
   
   // comment taken from robotiq_2f_85_move_it_config/launch/ompl_planning_pipeline.launch.xml
   // <!-- PreComputedJointTrajectory Action Server needs 1msec timesteps between waypoints  -->
+  double t_delta = 0.001;
   
-  // FIRST, we hypersample (including adjusting according to speedup_factor)
+  // FIRST, we oversample (including extra samples to account for speedup factor), but we do not actually speed up trajectory yet)
   double speedup_factor;
   ros::param::param<double>("~speedup_factor", speedup_factor, 1.0); 
   ROS_INFO_STREAM("the speedup factor is " << speedup_factor<< ".");
   
   bool pos_only = true;
-  trajectory_msgs::JointTrajectory hyper_joint_trajectory = interpolate_trajectory(robot_traj_msg.joint_trajectory, speedup_factor, 1.0, pos_only);
+  trajectory_msgs::JointTrajectory hyper_joint_trajectory = interpolate_trajectory(robot_traj_msg.joint_trajectory, 1.0, t_delta / speedup_factor, pos_only);
   robot_traj.setRobotTrajectoryMsg(*kinematic_state_, hyper_joint_trajectory);
+  ROS_INFO_STREAM("Hypersampled");
   ROS_INFO_STREAM("First timestamp after 0 is " << hyper_joint_trajectory.points[1].time_from_start << ".");
+  ROS_INFO_STREAM("Last timestamp is " << hyper_joint_trajectory.points.back().time_from_start << ".");
 
-  // THEN, we re-time
+  // THEN, we re-time (which may slow down the trajectory, if the original trajectory was dangerously fast)
   tp.computeTimeStamps(robot_traj);
   robot_traj.getRobotTrajectoryMsg(robot_traj_msg);
+  ROS_INFO_STREAM("Retimed");
   ROS_INFO_STREAM("First timestamp after 0 is " << robot_traj_msg.joint_trajectory.points[1].time_from_start << ".");
- 
+  ROS_INFO_STREAM("Last timestamp is " << robot_traj_msg.joint_trajectory.points.back().time_from_start << ".");
+
+  // note: at this point we have third-party timing instead of our original timing 
+  // only look at the the third-party timing if it was slower than our desired timing, or if the user has said we can speed up our timing
+  double current_trajectory_duration = robot_traj_msg.joint_trajectory.points.back().time_from_start.toSec();
+  double residual_speedup_factor;
+  if (can_speed_up || current_trajectory_duration >= original_trajectory_duration) 
+  {
+    // speedup_factor just applies to whatever the third-party timing returned
+    residual_speedup_factor = speedup_factor;
+  }
+  else
+  {
+    // otherwise, slow down the trajectory so that the total duration matches our desired 
+    residual_speedup_factor = current_trajectory_duration / original_trajectory_duration * speedup_factor;
+  }
+  ROS_INFO_STREAM("Residual speedup factor is " << residual_speedup_factor << ".");
    
-  // FINALLY, we subsample at the desired times (note no need to speedup_factor again)
+  // FINALLY, we subsample at the desired times.
   pos_only = false;
-  trajectory_msgs::JointTrajectory final_joint_trajectory = interpolate_trajectory(robot_traj_msg.joint_trajectory, 1.0, 1.0, pos_only);
+  trajectory_msgs::JointTrajectory final_joint_trajectory = interpolate_trajectory(robot_traj_msg.joint_trajectory, residual_speedup_factor, t_delta, pos_only);
+  ROS_INFO_STREAM("Final");
   ROS_INFO_STREAM("First timestamp after 0 is " << final_joint_trajectory.points[1].time_from_start << ".");
+  ROS_INFO_STREAM("Last timestamp is " << final_joint_trajectory.points.back().time_from_start << ".");
 
-
-  ROS_INFO_STREAM("we added all the points. there are " << final_joint_trajectory.points.size()<< " points.");
-  
   robot_traj.setRobotTrajectoryMsg(*kinematic_state_, final_joint_trajectory);
   robot_traj.getRobotTrajectoryMsg(robot_traj_msg);
-  ROS_INFO_STREAM("timestamp after 0 is still" << robot_traj_msg.joint_trajectory.points[1].time_from_start << ".");
-  
 
   // I should use a mutex (apparently i should use a unique_lock, but i haven't looked into why...) to ensure only
   // one command sent at a time 
@@ -177,11 +202,10 @@ RosRobotInterface::SendTrajectory(const trajectory_msgs::JointTrajectory &raw_jo
   boost::shared_ptr<const moveit_msgs::ExecuteTrajectoryResult> result = ac_->getResult();
   int error_code = result->error_code.val;
 
-  ROS_INFO_STREAM("The error code from calling the follow joint trajectory action was " << error_code << ".");
+  ROS_INFO_STREAM("RosRobotInterface: The error code from calling the follow joint trajectory action was " << error_code << ".");
   if (error_code != moveit_msgs::MoveItErrorCodes::SUCCESS)
   {
-    ROS_ERROR_STREAM("The error code from calling the follow joint trajectory action was not SUCCESS.");
-    throw; 
+    ROS_ERROR_STREAM("RosRobotInterface: The error code from calling the follow joint trajectory action was not SUCCESS.");
   }
   return(goal.trajectory.joint_trajectory);
 } 
@@ -194,7 +218,7 @@ RosRobotInterface::SendTargetAngles(const std::vector<double> &joint_angles, flo
   for (int i = 0; i < joint_angles.size(); i++) {
     if (joint_angles[i] > max_joint_angles_[i] || joint_angles[i] < min_joint_angles_[i]) 
     {
-      ROS_ERROR_STREAM("The requested joint " << i << " was " << joint_angles[i] << " which is past the joint limits.");
+      ROS_ERROR_STREAM("RosRobotInterface: The requested joint " << i << " was " << joint_angles[i] << " which is past the joint limits.");
       return false;
     }
   }
@@ -210,6 +234,8 @@ RosRobotInterface::SendTargetAngles(const std::vector<double> &joint_angles, flo
   // now, finally, fill out the structure
   joint_trajectory.joint_names = joint_names_;
   joint_trajectory.points = points;
-  SendTrajectory(joint_trajectory);
+  // This method was given a desired time-from-start, so don't adjust the timing.
+  bool can_speed_up = false;
+  SendTrajectory(joint_trajectory, can_speed_up);
   return true;
 }

@@ -23,7 +23,7 @@ class RosRobotInterface : public RobotInterface
     virtual void InitializeConnection();
     virtual bool SendTargetAngles(const std::vector<double> &joint_angles, float secs);
     virtual void GetCurrentAngles(std::vector<double> &joint_angles, std::vector<std::string> &joint_names);
-    virtual trajectory_msgs::JointTrajectory SendTrajectory(const trajectory_msgs::JointTrajectory &joint_trajectory);
+    virtual trajectory_msgs::JointTrajectory SendTrajectory(const trajectory_msgs::JointTrajectory &joint_trajectory, bool can_speed_up = false);
   private:
     ros::NodeHandle* nh_;
     std::shared_ptr<actionlib::SimpleActionClient<moveit_msgs::ExecuteTrajectoryAction>> ac_;

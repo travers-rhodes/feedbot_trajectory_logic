@@ -17,7 +17,7 @@ class RobotInterface
     virtual void InitializeConnection();
     virtual bool SendTargetAngles(const std::vector<double> &joint_angles, float secs);
     virtual void GetCurrentAngles(std::vector<double> &joint_angles, std::vector<std::string> &joint_names);
-    virtual trajectory_msgs::JointTrajectory SendTrajectory(const trajectory_msgs::JointTrajectory &joint_trajectory);
+    virtual trajectory_msgs::JointTrajectory SendTrajectory(const trajectory_msgs::JointTrajectory &joint_trajectory, bool can_speed_up = false);
     std::vector<double> max_joint_angles_, min_joint_angles_, initial_joint_values_;
     std::vector<std::string> joint_names_;
     std::string srdf_group_name_, end_effector_link_;

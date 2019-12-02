@@ -16,7 +16,7 @@ RobotInterface::InitializeConnection()
 }
 
 trajectory_msgs::JointTrajectory
-RobotInterface::SendTrajectory(const trajectory_msgs::JointTrajectory &joint_trajectory)
+RobotInterface::SendTrajectory(const trajectory_msgs::JointTrajectory &joint_trajectory, bool can_speed_up)
 {
 }
 

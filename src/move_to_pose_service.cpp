@@ -28,7 +28,8 @@ bool MoveToPoseService::move_to_joint_angles(feedbot_trajectory_logic::MoveToJoi
   
   jt.joint_names = joint_names;
   res.joint_trajectory = jt;
-  robot_interface_->SendTrajectory(jt);
+  bool can_speed_up = false;
+  robot_interface_->SendTrajectory(jt, can_speed_up);
   return true;
 }
 
@@ -69,7 +70,9 @@ bool MoveToPoseService::move_to_pose(feedbot_trajectory_logic::MoveToPose::Reque
   }
   
   jt.joint_names = joint_names;
-  res.joint_trajectory = robot_interface_->SendTrajectory(jt);
+  // in this case, our timings are fuzzy at best, so fine for the code to speed up the calculated timings above
+  bool can_speed_up = true;
+  res.joint_trajectory = robot_interface_->SendTrajectory(jt, can_speed_up);
   return true;
 }
 
@@ -114,8 +117,6 @@ int main(int argc, char **argv)
   ros::Duration(5).sleep();
   std::cout << "Done waiting 5 sec for DomusInterface in case it's slow to come up";
   MoveToPoseService move_to_pose_service(step_size_meters, robot_interface, &n, link_prefix, robot_description_param_name);
-  std::cout << "Waiting for trackPoseService in case it's slow to come up" << std::endl;
-  ros::Duration(5).sleep();
   ros::ServiceServer service = n.advertiseService("move_to_pose", &MoveToPoseService::move_to_pose, &move_to_pose_service);
   ros::ServiceServer angle_service = n.advertiseService("move_to_joint_angles", &MoveToPoseService::move_to_joint_angles, &move_to_pose_service);
   ros::spin();

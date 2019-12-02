@@ -1,5 +1,7 @@
+<?xml version="1.0"?>
 <launch>
   <arg name="sim" default="true"/>
+  <arg name="speedup_factor" default="0.5"/>
   
   <arg name="robot_type" default="$(eval 'gen3_rviz' if arg('sim') else 'gen3')"/>
   
@@ -13,7 +15,7 @@
     <param name="robot_type" type="string" value="$(arg robot_type)"/>
     <param name="robot_description_param_name" type="string" value="/my_$(arg robot_type)/robot_description" unless="$(arg sim)"/>
     <!-- values less than 1 slow down motions -->
-    <param name="speedup_factor" value="0.3"/>
+    <param name="speedup_factor" value="$(arg speedup_factor)"/>
   </node>
 
 
@@ -39,6 +41,8 @@
       <arg name="start_moveit" value="true"/>
       <arg name="gripper" value="robotiq_2f_85"/>
     </include>
+    <!-- launch video stream -->
+    <include file="$(find demo_scripts)/launch/rtsp_stream.launch" />
   </group>
 
 </launch>

@@ -41,8 +41,6 @@ JacobianController::JacobianController(double trans_step_size_meters,  RobotInte
   //std::cout << "Waiting to give time for connection to Arduino to be established" << std::endl;
   //ros::Duration(2).sleep();
   std::cout << "Don't move to default position" << std::endl;
-  std::cout << "Sleeping for 2 seconds to get to initial position";
-  ros::Duration(2).sleep();
 }
     
 double JacobianController::make_step_to_target_pose(const geometry_msgs::Pose &target_pose){
