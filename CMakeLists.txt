@@ -16,8 +16,6 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   trajectory_msgs
   std_msgs
-  interactive_markers
-  visualization_msgs
   tf
 )
 
@@ -25,8 +23,6 @@ find_package(catkin REQUIRED COMPONENTS
 # find_package(Boost REQUIRED COMPONENTS system)
 ## https://github.com/wsnewman/learning_ros/blob/master/Part_2/example_eigen/CMakeLists.txt
 find_package(Eigen3 REQUIRED)
-find_package(rostest REQUIRED)
-find_package(yaml-cpp REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 add_definitions(${EIGEN_DEFINITIONS})
 
@@ -59,27 +55,12 @@ catkin_python_setup()
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
-## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  JointAngles.msg
-)
-
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
-  TrackPose.srv
   MoveToPose.srv
   MoveToJointAngles.srv
-  PlayTrajectory.srv
 )
-
-## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
@@ -140,8 +121,6 @@ include_directories(
 add_library(${PROJECT_NAME}
    src/jacobian_controller.cpp
    src/robot_interface.cpp
-   src/joint_echoing_interface.cpp
-   # src/custom_domus_interface.cpp --Requires serial
    src/ros_robot_interface.cpp
    src/transform_helpers.cpp
 )
@@ -154,10 +133,7 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(track_pose_service src/track_pose_service.cpp)
 add_executable(move_to_pose_service src/move_to_pose_service.cpp)
-add_executable(domus_controller src/domus_controller.cpp)
-add_executable(interactive_calibration src/interactive_calibration.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -170,27 +146,12 @@ add_executable(interactive_calibration src/interactive_calibration.cpp)
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(track_pose_service
-   feedbot_trajectory_logic
-   ${catkin_LIBRARIES}
-)
-
 target_link_libraries(move_to_pose_service
    feedbot_trajectory_logic
    ${catkin_LIBRARIES}
 )
 
-target_link_libraries(domus_controller
-   feedbot_trajectory_logic
-   ${catkin_LIBRARIES}
-)
-
 target_link_libraries(feedbot_trajectory_logic
-   ${catkin_LIBRARIES}
-)
-
-target_link_libraries(interactive_calibration
-   yaml-cpp
    ${catkin_LIBRARIES}
 )
 
@@ -221,23 +182,3 @@ install(DIRECTORY include/${PROJECT_NAME}/
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE
 )
-
-## Mark other files for installation (e.g. launch and bag files, etc.)
-# install(FILES
-#   # myfile1
-#   # myfile2
-#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-# )
-
-#############
-## Testing ##
-#############
-
-## Add gtest based cpp test target and link libraries
-catkin_add_gtest(utest test/utest.cpp)
-if(TARGET utest)
-  target_link_libraries(utest ${PROJECT_NAME})
-endif()
-
-## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)

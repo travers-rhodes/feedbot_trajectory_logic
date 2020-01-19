@@ -3,17 +3,16 @@
   <arg name="sim" default="true"/>
   <arg name="speedup_factor" default="0.5"/>
   
-  <arg name="robot_type" default="$(eval 'gen3_rviz' if arg('sim') else 'gen3')"/>
+  <arg name="robot_type" default="$(eval 'sim' if arg('sim') else 'ur5')"/>
   
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find feedbot_trajectory_logic)/config/kinova_default.rviz" /> 
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find feedbot_trajectory_logic)/config/ur5_default.rviz" /> 
 
   <node name="move_to_pose_service" pkg="feedbot_trajectory_logic" type="move_to_pose_service" respawn="false" output="screen">
     <!--launch-prefix="/home/travers/run_tmux.sh">-->
     <rosparam command="load"
-              file="$(find gen3_robotiq_2f_85_move_it_config)/config/kinematics.yaml"/>
+              file="$(find ur5_e_moveit_config)/config/kinematics.yaml"/>
     <param name="step_size_meters" type="double" value="0.01"/>
     <param name="robot_type" type="string" value="$(arg robot_type)"/>
-    <param name="robot_description_param_name" type="string" value="/my_$(arg robot_type)/robot_description" unless="$(arg sim)"/>
     <!-- values less than 1 slow down motions -->
     <param name="speedup_factor" value="$(arg speedup_factor)"/>
   </node>
@@ -21,8 +20,8 @@
 
   <group if="$(arg sim)">
     <!-- Load universal robot description format (URDF) -->
-    <param name="robot_description" command="xacro arm:=gen3 gripper:=robotiq_2f_85 '$(find kortex_description)/robots/gen3_robotiq_2f_85.xacro'"/>
-    <include file="$(find gen3_robotiq_2f_85_move_it_config)/launch/move_group.launch">
+    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find ur_e_description)/urdf/ur5e_joint_limited_robot.urdf.xacro'" />
+    <include file="$(find ur5_e_moveit_config)/launch/move_group.launch">
       <arg name="allow_trajectory_execution" value="true"/>
       <arg name="fake_execution" value="true"/>
       <arg name="info" value="true"/>
@@ -36,13 +35,11 @@
   </group>
   
   <group unless="$(arg sim)">
-    <include file="$(find kortex_driver)/launch/kortex_driver.launch">
-      <arg name="start_rviz" value="false"/>
-      <arg name="start_moveit" value="true"/>
-      <arg name="gripper" value="robotiq_2f_85"/>
+    <include file="$(find ur_robot_driver)/launch/ur5e_bringup.launch">
     </include>
     <!-- launch video stream -->
-    <include file="$(find demo_scripts)/launch/rtsp_stream.launch" />
   </group>
+
+  <node name="move_the_robot" pkg="feedbot_trajectory_logic" type="move_poses.py"/>
 
 </launch>

@@ -90,30 +90,16 @@ int main(int argc, char **argv)
 
   RobotInterface* robot_interface;
   NiryoRobotParams robot_params;
-  if (robot_type == "niryo")
-  { 
-    std::cout << "Running code on a standard Niryo robot";
-    robot_interface = new RosRobotInterface("niryo_one_follow_joint_trajectory_controller/follow_joint_trajectory", "joint_states", &n, robot_params);
-  } else if (robot_type == "ur5") { 
+  if (robot_type == "ur5") { 
     std::cout << "Running code on a UR5 robot";
     UR5RobotParams ur5_robot_params;
     robot_interface = new RosRobotInterface("arm_controller/follow_joint_trajectory", "joint_states", &n, ur5_robot_params);
-  } else if (robot_type == "gen3") { 
-    std::cout << "Running code on a gen3 robot";
-    Gen3RobotParams gen3_robot_params;
-    robot_interface = new RosRobotInterface("/my_gen3/execute_trajectory", "my_gen3/joint_states", &n, gen3_robot_params, robot_description_param_name);
-  } else if (robot_type == "gen3_rviz") { 
+  } else if (robot_type == "sim") { 
     std::cout << "Echoing joints on rviz gen3 robot";
-    Gen3RobotParams gen3_robot_params;
-    robot_interface = new RosRobotInterface("/execute_trajectory", "/joint_states", &n, gen3_robot_params, robot_description_param_name);
-  } else if (robot_type == "custom_domus") {
-    ROS_ERROR_STREAM("Disabled code for custom Domus robot");
-    //robot_interface = new CustomDomusInterface(&n, robot_params);
-  } else {
-    std::cout << "Simulating code without connecting to any robot";
-    robot_interface = new JointEchoingInterface(&n, robot_params);
+    UR5RobotParams ur5_robot_params;
+    robot_interface = new RosRobotInterface("/execute_trajectory", "/joint_states", &n, ur5_robot_params, robot_description_param_name);
   }
-  std::cout << "Waiting 5 sec for DomusInterface in case it's slow to come up";
+  std::cout << "Waiting 5 sec for RobotInterface in case it's slow to come up";
   ros::Duration(5).sleep();
   std::cout << "Done waiting 5 sec for DomusInterface in case it's slow to come up";
   MoveToPoseService move_to_pose_service(step_size_meters, robot_interface, &n, link_prefix, robot_description_param_name);

@@ -42,8 +42,8 @@ class UR5RobotParams : public CustomRobotParams
       min_joint_angles = min;
       initial_joint_values = initial_joint_vals;
       joint_names = names;
-      srdf_group_name = "ur5e_arm";
-      end_effector_link = "fork_point";
+      srdf_group_name = "manipulator";
+      end_effector_link = "ee_link";
     };
 };
 

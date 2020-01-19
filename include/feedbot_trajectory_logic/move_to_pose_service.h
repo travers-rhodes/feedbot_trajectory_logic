@@ -9,9 +9,7 @@
 #include <feedbot_trajectory_logic/jacobian_controller.h>
 #include "feedbot_trajectory_logic/MoveToPose.h"
 #include "feedbot_trajectory_logic/MoveToJointAngles.h"
-#include "feedbot_trajectory_logic/joint_echoing_interface.h"
 #include "feedbot_trajectory_logic/ros_robot_interface.h"
-#include "feedbot_trajectory_logic/custom_domus_interface.h"
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include "geometry_msgs/Pose.h"
