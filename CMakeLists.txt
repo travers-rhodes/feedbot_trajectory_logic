@@ -116,7 +116,7 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES feedbot_trajectory_logic 
   CATKIN_DEPENDS
-  DEPENDS system_lib
+  #  DEPENDS system_lib
 )
 
 ###########
