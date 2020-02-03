@@ -78,7 +78,7 @@ bool MoveToPoseService::move_to_pose(feedbot_trajectory_logic::MoveToPose::Reque
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "track_pose_server");
+  ros::init(argc, argv, "move_to_pose_server");
   ros::NodeHandle n;
   bool is_simulation, is_simulate_spoon;
   double step_size_meters;
@@ -90,15 +90,7 @@ int main(int argc, char **argv)
 
   RobotInterface* robot_interface;
   NiryoRobotParams robot_params;
-  if (robot_type == "niryo")
-  { 
-    std::cout << "Running code on a standard Niryo robot";
-    robot_interface = new RosRobotInterface("niryo_one_follow_joint_trajectory_controller/follow_joint_trajectory", "joint_states", &n, robot_params);
-  } else if (robot_type == "ur5") { 
-    std::cout << "Running code on a UR5 robot";
-    UR5RobotParams ur5_robot_params;
-    robot_interface = new RosRobotInterface("arm_controller/follow_joint_trajectory", "joint_states", &n, ur5_robot_params);
-  } else if (robot_type == "gen3") { 
+  if (robot_type == "gen3") { 
     std::cout << "Running code on a gen3 robot";
     Gen3RobotParams gen3_robot_params;
     robot_interface = new RosRobotInterface("/my_gen3/execute_trajectory", "my_gen3/joint_states", &n, gen3_robot_params, robot_description_param_name);
@@ -106,9 +98,6 @@ int main(int argc, char **argv)
     std::cout << "Echoing joints on rviz gen3 robot";
     Gen3RobotParams gen3_robot_params;
     robot_interface = new RosRobotInterface("/execute_trajectory", "/joint_states", &n, gen3_robot_params, robot_description_param_name);
-  } else if (robot_type == "custom_domus") {
-    ROS_ERROR_STREAM("Disabled code for custom Domus robot");
-    //robot_interface = new CustomDomusInterface(&n, robot_params);
   } else {
     std::cout << "Simulating code without connecting to any robot";
     robot_interface = new JointEchoingInterface(&n, robot_params);

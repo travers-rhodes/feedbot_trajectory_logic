@@ -16,8 +16,6 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   trajectory_msgs
   std_msgs
-  interactive_markers
-  visualization_msgs
   tf
 )
 
@@ -26,7 +24,6 @@ find_package(catkin REQUIRED COMPONENTS
 ## https://github.com/wsnewman/learning_ros/blob/master/Part_2/example_eigen/CMakeLists.txt
 find_package(Eigen3 REQUIRED)
 find_package(rostest REQUIRED)
-find_package(yaml-cpp REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 add_definitions(${EIGEN_DEFINITIONS})
 
@@ -60,18 +57,15 @@ catkin_python_setup()
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  JointAngles.msg
-)
+#add_message_files(
+#  FILES
+#)
 
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
-  TrackPose.srv
   MoveToPose.srv
   MoveToJointAngles.srv
-  PlayTrajectory.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -121,8 +115,8 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES feedbot_trajectory_logic 
-#  CATKIN_DEPENDS
-#  DEPENDS system_lib
+  CATKIN_DEPENDS
+  DEPENDS system_lib
 )
 
 ###########
@@ -141,7 +135,6 @@ add_library(${PROJECT_NAME}
    src/jacobian_controller.cpp
    src/robot_interface.cpp
    src/joint_echoing_interface.cpp
-   # src/custom_domus_interface.cpp --Requires serial
    src/ros_robot_interface.cpp
    src/transform_helpers.cpp
 )
@@ -154,10 +147,7 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(track_pose_service src/track_pose_service.cpp)
 add_executable(move_to_pose_service src/move_to_pose_service.cpp)
-add_executable(domus_controller src/domus_controller.cpp)
-add_executable(interactive_calibration src/interactive_calibration.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -170,27 +160,12 @@ add_executable(interactive_calibration src/interactive_calibration.cpp)
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(track_pose_service
-   feedbot_trajectory_logic
-   ${catkin_LIBRARIES}
-)
-
 target_link_libraries(move_to_pose_service
    feedbot_trajectory_logic
    ${catkin_LIBRARIES}
 )
 
-target_link_libraries(domus_controller
-   feedbot_trajectory_logic
-   ${catkin_LIBRARIES}
-)
-
 target_link_libraries(feedbot_trajectory_logic
-   ${catkin_LIBRARIES}
-)
-
-target_link_libraries(interactive_calibration
-   yaml-cpp
    ${catkin_LIBRARIES}
 )
 
