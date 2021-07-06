@@ -9,8 +9,8 @@
   </include> 
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="rob_st_pub"/>
 
-  <node name="track_pose_service" pkg="feedbot_trajectory_logic" type="track_pose_service" respawn="false" output="screen">
-    <!--launch-prefix="/home/travers/run_tmux.sh">-->
+  <node name="track_pose_service" pkg="feedbot_trajectory_logic" type="track_pose_service" respawn="false" output="screen"
+    <!--launch-prefix="xterm -e gdb -ex run --args">-->
     <rosparam command="load"
               file="$(find gen3_robotiq_2f_85_move_it_config)/config/kinematics.yaml"/>
     <param name="update_rate_hz" type="double" value="10"/>

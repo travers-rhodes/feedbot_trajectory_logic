@@ -29,8 +29,8 @@ JacobianController::JacobianController(double trans_step_size_meters,  RobotInte
   joint_model_group_ = kinematic_model_->getJointModelGroup(robot_interface_->srdf_group_name_);
   std::cout << "BOY HAVE WE GOT LINKS FOR YOU!!!!!\n"; 
   std::vector<std::string> linkNames = joint_model_group_->getLinkModelNames();
-  // fencepost problem is a funny way to count joints...
-  num_joints_ = linkNames.size() - 1; 
+  // count joints by counting the number of initial joint values we set 
+  num_joints_ = robot_interface->initial_joint_values_.size(); 
   for (std::string link : linkNames)
   {
     std::cout << link << " ,  ";
