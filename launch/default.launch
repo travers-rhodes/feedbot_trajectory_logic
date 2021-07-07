@@ -4,13 +4,11 @@
   <arg name="calibrate_only" default="false"/>
   <arg name="just_follow_mouth" default="false"/>
 
-  <include file="$(find gen3_robotiq_2f_85_move_it_config)/launch/planning_context.launch">
-    <arg name="load_robot_description" value="true"/>
-  </include> 
+  <include file="$(find feedbot_trajectory_logic)/launch/planning_context.launch"/>
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="rob_st_pub"/>
 
-  <node name="track_pose_service" pkg="feedbot_trajectory_logic" type="track_pose_service" respawn="false" output="screen"
-    <!--launch-prefix="xterm -e gdb -ex run --args">-->
+  <node name="track_pose_service" pkg="feedbot_trajectory_logic" type="track_pose_service" respawn="false" output="screen">
+    <!--launch-prefix="xterm -e gdb -ex run - -args" -->
     <rosparam command="load"
               file="$(find gen3_robotiq_2f_85_move_it_config)/config/kinematics.yaml"/>
     <param name="update_rate_hz" type="double" value="10"/>
